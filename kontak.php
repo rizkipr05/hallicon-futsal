@@ -32,7 +32,7 @@ if (isset($_POST["simpan"])) {
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Jempol Futsal</title>
-    <meta content="" name="description">
+    <meta content="Kontak HALL ICON (Badminton & Futsall) untuk informasi sewa lapangan, jadwal, dan fasilitas." name="description">
     <meta content="" name="keywords">
 
 
@@ -187,7 +187,7 @@ if (isset($_POST["simpan"])) {
    <section id="contact" class="contact section">
 
 <div class="mb-5" data-aos="fade-up" data-aos-delay="200">
-  <iframe style="border:0; width: 100%; height: 300px;" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3972.3914843820053!2d105.25494839999999!3d-5.357085100000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e40c52ff8c4ab75%3A0xd64e118f07f67bd0!2sFutsal%20Jempol!5e0!3m2!1sid!2sid!4v1736950060971!5m2!1sid!2sid" frameborder="0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  <iframe style="border:0; width: 100%; height: 300px;" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.749456158179!2d106.5961911!3d-6.2966193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69fd0eff6717bd%3A0x7752cd8505ce3ec6!2sHALL%20ICON%20(Badminton%20%26%20Futsall)!5e0!3m2!1sid!2sid!4v1770004283214!5m2!1sid!2sid%22" frameborder="0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 </div><!-- End Google Maps -->
 
 <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -199,7 +199,7 @@ if (isset($_POST["simpan"])) {
         <i class="bi bi-geo-alt flex-shrink-0"></i>
         <div>
           <h3>Alamat</h3>
-          <p>Jl. Bougenville No.17, Labuhan Dalam, Kec. Tj. Senang, Kota Bandar Lampung, Lampung 35141</p>
+          <p>Babakan, Kec. Legok, Kabupaten Tangerang, Banten 15820</p>
         </div>
       </div><!-- End Info Item -->
 
@@ -207,15 +207,15 @@ if (isset($_POST["simpan"])) {
         <i class="bi bi-telephone flex-shrink-0"></i>
         <div>
           <h3>No Telepon</h3>
-          <p>0821-8222-6616</p>
+          <p>0858-1073-1351</p>
         </div>
       </div><!-- End Info Item -->
 
       <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="500">
         <i class="bi bi-envelope flex-shrink-0"></i>
         <div>
-          <h3>Email Us</h3>
-          <p>JempolFutsal@gmail.com</p>
+          <h3>instagram</h3>
+          <p>@halliconlegok</p>
         </div>
       </div><!-- End Info Item -->
     </div>
@@ -250,9 +250,9 @@ if (isset($_POST["simpan"])) {
             <span class="sitename">Lokasi</span>
           </a>
           <div class="footer-contact pt-3">
-            <p>Jl. Bougenville No.17, Labuhan Dalam, Kec. Tj. Senang, Kota Bandar Lampung, Lampung 35141</p>
-            <p class="mt-3"><strong>Phone:</strong> <span>0821-8222-6616</span></p>
-            <p><strong>Email:</strong> <span>JempolFutsal@gmail.com</span></p>
+            <p>Babakan, Kec. Legok, Kabupaten Tangerang, Banten 15820</p>
+            <p class="mt-3"><strong>Phone:</strong> <span>085810731351</span></p>
+            <p><strong>instagram:</strong> <span>@halliconlegok</span></p>
           </div>
           <div class="social-links d-flex mt-4">
             <a href=""><i class="bi bi-whatsapp"></i></a>

@@ -264,9 +264,9 @@ if (isset($_POST["bayar_212279"])) {
             <span class="sitename">Lokasi</span>
           </a>
           <div class="footer-contact pt-3">
-            <p>Jl. Bougenville No.17, Labuhan Dalam, Kec. Tj. Senang, Kota Bandar Lampung, Lampung 35141</p>
-            <p class="mt-3"><strong>Phone:</strong> <span>0821-8222-6616</span></p>
-            <p><strong>Email:</strong> <span>JempolFutsal@gmail.com</span></p>
+            <p>Babakan, Kec. Legok, Kabupaten Tangerang, Banten 15820</p>
+            <p class="mt-3"><strong>Phone:</strong> <span>085810731351</span></p>
+            <p><strong>instagram:</strong> <span>@halliconlegok</span></p>
           </div>
           <div class="social-links d-flex mt-4">
             <a href=""><i class="bi bi-whatsapp"></i></a>

@@ -35,7 +35,7 @@ if (isset($_POST["simpan"])) {
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>Jempol Futsal</title>
-  <meta content="" name="description">
+  <meta content="HALL ICON (Badminton & Futsall) menyediakan lapangan badminton dan futsal dengan fasilitas lengkap untuk latihan dan sewa." name="description">
   <meta content="" name="keywords">
 
   <!-- Favicons -->
@@ -196,7 +196,7 @@ if (isset($_POST["simpan"])) {
       <img src="assets/img/photo-1630420598913-44208d36f9af.jpg" alt="" data-aos="fade-in">
 
       <div class="container">
-        <h2 data-aos="fade-up" data-aos-delay="100">Sehatkan Dirimu Dengan<br>Berolahraga di <span class="text-"> Jempol Futsal </span> <br> </h2>
+        <h2 data-aos="fade-up" data-aos-delay="100">Sehatkan Dirimu Dengan<br>Berolahraga di <span class="text-"> HALL ICON </span> <br> </h2>
         <div class="d-flex mt-4" data-aos="fade-up" data-aos-delay="300">
           <a href="user/lapangan.php" class="btn-get-started">Booking Sekarang <i class="bi bi-arrow-right"></i></a>
         </div>
@@ -216,14 +216,14 @@ if (isset($_POST["simpan"])) {
           </div>
 
           <div class="col-lg-6 order-2 order-lg-1 content" data-aos="fade-up" data-aos-delay="200">
-            <h3>Basecamp Jempol - Futsal Hadir Untuk Anda</h3>
+            <h3>HALL ICON (Badminton & Futsall) Hadir Untuk Anda</h3>
             <p class="fst-italic">
-              Temukan pengalaman olahraga yang luar biasa dengan fasilitas premium kami.
+              Nikmati pengalaman bermain badminton dan futsal dengan fasilitas lengkap dan nyaman.
             </p>
             <ul>
-              <li><i class="bi bi-check-circle"></i> <span>Fasilitas olahraga terbaru dan terlengkap untuk latihan yang lebih efektif.</span></li>
-              <li><i class="bi bi-check-circle"></i> <span>Pelatih profesional yang siap membantu Anda mencapai tujuan dengan strategi yang terbukti.</span></li>
-              <li><i class="bi bi-check-circle"></i> <span>Lingkungan yang mendukung dan nyaman, menciptakan suasana positif untuk setiap latihan.</span></li>
+              <li><i class="bi bi-check-circle"></i> <span>Lapangan badminton dan futsal berkualitas standar pertandingan.</span></li>
+              <li><i class="bi bi-check-circle"></i> <span>Fasilitas pendukung lengkap seperti ruang ganti, area tunggu, dan parkir.</span></li>
+              <li><i class="bi bi-check-circle"></i> <span>Suasana nyaman dengan pelayanan ramah untuk latihan dan sparing.</span></li>
             </ul>
           </div>
         </div>
@@ -284,9 +284,9 @@ if (isset($_POST["simpan"])) {
             <span class="sitename">Lokasi</span>
           </a>
           <div class="footer-contact pt-3">
-            <p>Jl. Bougenville No.17, Labuhan Dalam, Kec. Tj. Senang, Kota Bandar Lampung, Lampung 35141</p>
-            <p class="mt-3"><strong>Phone:</strong> <span>0821-8222-6616</span></p>
-            <p><strong>Email:</strong> <span>JempolFutsal@gmail.com</span></p>
+            <p>Babakan, Kec. Legok, Kabupaten Tangerang, Banten 15820</p>
+            <p class="mt-3"><strong>Phone:</strong> <span>085810731351</span></p>
+            <p><strong>instagram:</strong> <span>@halliconlegok</span></p>
           </div>
           <div class="social-links d-flex mt-4">
             <a href=""><i class="bi bi-whatsapp"></i></a>
