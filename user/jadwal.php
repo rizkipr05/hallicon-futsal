@@ -52,7 +52,7 @@ $profil = query("SELECT * FROM user_212279 WHERE 212279_id_user = '$id_user'")[0
               <a class="nav-link active" aria-current="page" href="lapangan.php">Lapangan</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="bayar.php">Pembayaran</a>
+              <a class="nav-link active" aria-current="page" href="pesanan.php">Pembayaran</a>
             </li>
           </ul>
           <?php
@@ -90,7 +90,7 @@ $profil = query("SELECT * FROM user_212279 WHERE 212279_id_user = '$id_user'")[0
                 <p><?= $profil["212279_no_handphone"]; ?></p>
                 <p><?= $profil["212279_alamat"]; ?></p>
                 <a href="../logout.php" class="btn btn-danger">Logout</a>
-                <a href="" data-bs-toggle="modal" data-bs-target="#editProfilModal" class="btn btn-inti">Edit Profil</a>
+                <a href="edit_profil.php" class="btn btn-inti">Edit Profil</a>
               </div>
             </div>
           </div>
@@ -225,8 +225,7 @@ $profil = query("SELECT * FROM user_212279 WHERE 212279_id_user = '$id_user'")[0
                               <input type="number" name="total" class="form-control border border-danger" id="exampleInputPassword1" value="<?= $row["212279_total"]; ?>" disabled>
                             </div>
                             <div class="mt-3">
-                              <label for="exampleInputPassword1" class="form-label">Upload Bukti</label>
-                              <input type="file" name="bukti" class="form-control" id="exampleInputPassword1">
+                              <div class="alert alert-info mb-0">Pembayaran dilakukan melalui Midtrans di halaman Pesanan.</div>
                             </div>
                           </div>
                         </div>
@@ -234,7 +233,7 @@ $profil = query("SELECT * FROM user_212279 WHERE 212279_id_user = '$id_user'")[0
                           <h6 class=" text-center border border-danger">Status : Belum Bayar</h6>
                         </div>
                         <div class="modal-footer">
-                          <button type="submit" class="btn btn-inti" name="bayar" id="bayar">Bayar</button>
+                          <a href="pesanan.php" class="btn btn-inti">Bayar di Pesanan</a>
                         </div>
                       </form>
                     </div>
@@ -281,8 +280,7 @@ $profil = query("SELECT * FROM user_212279 WHERE 212279_id_user = '$id_user'")[0
                               <input type="number" name="total" class="form-control " id="exampleInputPassword1" value="<?= $row["212279_total"]; ?>" disabled>
                             </div>
                             <div class="mt-3">
-                              <label for="exampleInputPassword1" class="form-label">Upload Bukti</label>
-                              <input type="file" name="bukti" class="form-control" id="exampleInputPassword1">
+                              <div class="alert alert-info mb-0">Pembayaran dilakukan melalui Midtrans di halaman Pesanan.</div>
                             </div>
                           </div>
                         </div>

@@ -88,15 +88,17 @@ function edit($data)
   global $conn;
 
   $userid = $_SESSION["id_user"];
-  $username = strtolower(stripslashes($data["email"]));
-  $nama = $data["nama_lengkap"];
-  $no_handphone = $data["hp"];
-  $gender = $data["jenis_kelamin"];
-  $gambar = $data["foto"];
-  $gambarLama = $data["fotoLama"];
+  $username = strtolower(stripslashes($data["email"] ?? ($data["212279_email"] ?? "")));
+  $nama = $data["nama_lengkap"] ?? ($data["212279_nama_lengkap"] ?? "");
+  $no_handphone = $data["hp"] ?? ($data["212279_no_handphone"] ?? "");
+  $gender = $data["jenis_kelamin"] ?? ($data["212279_jenis_kelamin"] ?? "");
+  $alamat = $data["alamat"] ?? ($data["212279_alamat"] ?? "");
+  $gambar = $data["foto"] ?? ($data["212279_foto"] ?? "");
+  $gambarLama = $data["fotoLama"] ?? ($data["212279_foto"] ?? "");
+  $fileKey = isset($_FILES["foto"]) ? "foto" : (isset($_FILES["212279_foto"]) ? "212279_foto" : "foto");
 
   // Cek apakah User pilih gambar baru
-  if ($_FILES["foto"]["error"] === 4) {
+  if (!isset($_FILES[$fileKey]) || $_FILES[$fileKey]["error"] === 4) {
     $gambar = $gambarLama;
   } else {
     $gambar = upload();
@@ -106,12 +108,130 @@ function edit($data)
   212279_nama_lengkap = '$nama',
   212279_no_handphone = '$no_handphone',
   212279_jenis_kelamin = '$gender',
+  212279_alamat = '$alamat',
   212279_foto = '$gambar'
   WHERE 212279_id_user = '$userid'
   ";
 
   mysqli_query($conn, $query);
   return mysqli_affected_rows($conn);
+}
+
+function getPricingRules()
+{
+  global $conn;
+  static $rulesCache = null;
+  if ($rulesCache !== null) {
+    return $rulesCache;
+  }
+
+  $rules = [];
+  $result = mysqli_query($conn, "SELECT * FROM harga_212279 ORDER BY 212279_hari, 212279_jam_mulai");
+  if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+      $rules[] = $row;
+    }
+  }
+
+  if (empty($rules)) {
+    $rules = [
+      ['212279_hari' => 'weekday', '212279_jam_mulai' => 8,  '212279_jam_selesai' => 16, '212279_harga' => 1],
+      ['212279_hari' => 'weekday', '212279_jam_mulai' => 16, '212279_jam_selesai' => 22, '212279_harga' => 1],
+      ['212279_hari' => 'weekend', '212279_jam_mulai' => 8,  '212279_jam_selesai' => 22, '212279_harga' => 1],
+    ];
+  }
+
+  $rulesCache = $rules;
+  return $rules;
+}
+
+function tambahHarga($data)
+{
+  global $conn;
+  $hari = $data['hari'];
+  $jamMulai = intval($data['jam_mulai']);
+  $jamSelesai = intval($data['jam_selesai']);
+  $harga = intval($data['harga']);
+
+  mysqli_query($conn, "INSERT INTO harga_212279 (212279_hari, 212279_jam_mulai, 212279_jam_selesai, 212279_harga)
+    VALUES ('$hari', '$jamMulai', '$jamSelesai', '$harga')");
+
+  return mysqli_affected_rows($conn);
+}
+
+function editHarga($data)
+{
+  global $conn;
+  $id = intval($data['id_harga']);
+  $hari = $data['hari'];
+  $jamMulai = intval($data['jam_mulai']);
+  $jamSelesai = intval($data['jam_selesai']);
+  $harga = intval($data['harga']);
+
+  mysqli_query($conn, "UPDATE harga_212279 SET
+    212279_hari = '$hari',
+    212279_jam_mulai = '$jamMulai',
+    212279_jam_selesai = '$jamSelesai',
+    212279_harga = '$harga'
+    WHERE 212279_id_harga = '$id'");
+
+  return mysqli_affected_rows($conn);
+}
+
+function hapusHarga($id)
+{
+  global $conn;
+  $id = intval($id);
+  mysqli_query($conn, "DELETE FROM harga_212279 WHERE 212279_id_harga = '$id'");
+  return mysqli_affected_rows($conn);
+}
+
+function parseDurationHours($timeStr)
+{
+  if (!is_string($timeStr) || $timeStr === '') {
+    return 0;
+  }
+  if (strpos($timeStr, ':') !== false) {
+    $parts = explode(':', $timeStr);
+    return max(0, intval($parts[0]));
+  }
+  return max(0, intval($timeStr));
+}
+
+function getRateByDatetime($datetimeStr)
+{
+  $dt = new DateTime($datetimeStr);
+  $dayOfWeek = intval($dt->format('N')); // 1=Mon ... 7=Sun
+  $hour = intval($dt->format('G')); // 0-23
+  $dayType = ($dayOfWeek >= 6) ? 'weekend' : 'weekday';
+  $rules = getPricingRules();
+
+  foreach ($rules as $rule) {
+    if ($rule['212279_hari'] !== $dayType) {
+      continue;
+    }
+    $start = intval($rule['212279_jam_mulai']);
+    $end = intval($rule['212279_jam_selesai']);
+    if ($hour >= $start && $hour < $end) {
+      return intval($rule['212279_harga']);
+    }
+  }
+
+  return 1;
+}
+
+function calculateTotalByHours($datetimeStr, $durationHours)
+{
+  $durationHours = max(0, intval($durationHours));
+  $dt = new DateTime($datetimeStr);
+  $total = 0;
+
+  for ($i = 0; $i < $durationHours; $i++) {
+    $total += getRateByDatetime($dt->format('Y-m-d H:i:s'));
+    $dt->modify('+1 hour');
+  }
+
+  return $total;
 }
 
 function pesan($data)
@@ -121,12 +241,16 @@ function pesan($data)
     $userid = $_SESSION["id_user"];
     $idlpg = $data["id_lpg"];
     $tanggal_pesan = date('Y-m-d H:i:s'); // Menyimpan tanggal dan waktu saat ini
-    $lama = intval($data["jam_mulai"]); // Menganggap 'jam_mulai' adalah jumlah jam sewa
+    $lama = parseDurationHours($data["jam_mulai"]); // Menganggap 'jam_mulai' adalah jumlah jam sewa
     $mulai = $data["tgl_main"];
     $mulai_waktu = strtotime($mulai); // Mengubah format datetime-local menjadi format UNIX timestamp
     $habis_waktu = $mulai_waktu + ($lama * 3600); // Menambahkan waktu sewa dalam jam ke waktu mulai
-    $habis = date('Y-m-d\TH:i:s', $habis_waktu); // Mengubah format waktu kembali ke datetime-local
-    $harga = $data["harga"];
+    $habis = date('Y-m-d H:i:s', $habis_waktu); // Format datetime untuk MySQL
+    $harga = getRateByDatetime($mulai);
+
+    if ($lama <= 0) {
+        return false;
+    }
 
     // Cek bentrokan jadwal
     $query = "SELECT * FROM sewa_212279 WHERE 212279_id_lapangan = '$idlpg' 
@@ -139,7 +263,7 @@ function pesan($data)
         return false;
     } else {
         // Tidak ada bentrokan, lanjutkan dengan penyimpanan data
-        $total = $lama * $harga;
+        $total = calculateTotalByHours($mulai, $lama);
         mysqli_query($conn, "INSERT INTO sewa_212279 (212279_id_user, 212279_id_lapangan, 212279_tanggal_pesan, 212279_lama_sewa, 212279_jam_mulai, 212279_jam_habis, 212279_harga, 212279_total) 
                              VALUES ('$userid', '$idlpg', '$tanggal_pesan', '$lama', '$mulai', '$habis', '$harga', '$total')");
 

@@ -1,0 +1,11 @@
+<?php
+
+return [
+  'midtrans' => [
+    'server_key' => 'YOUR_SERVER_KEY',
+    'client_key' => 'YOUR_CLIENT_KEY',
+    'is_sandbox' => true,
+    'snap_url' => 'https://app.sandbox.midtrans.com/snap/v1/transactions',
+    'api_base' => 'https://api.sandbox.midtrans.com/v2',
+  ],
+];

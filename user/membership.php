@@ -79,11 +79,17 @@ if (isset($_POST["simpan"])) {
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
-      <?php if ($loggedIn): ?>
-            <!-- Jika sudah login, tampilkan tombol profil -->
-            <a class="btn-getstarted" data-bs-toggle="modal" data-bs-target="#profilModal">
-                <i class="bi bi-person"></i> Profil
-            </a>
+            <?php if ($loggedIn): ?>
+            <div class="dropdown">
+                <a class="btn-getstarted dropdown-toggle profile-trigger" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="../img/<?= $profil["212279_foto"]; ?>" alt="Foto Profil" class="profile-thumb">
+                    <span>Profil</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="edit_profil.php">Edit Profil</a></li>
+                    <li><a class="dropdown-item" href="../logout.php">Logout</a></li>
+                </ul>
+            </div>
         <?php else: ?>
             <!-- Jika belum login, tampilkan tombol login -->
             <a href="../login.php" class="btn-getstarted" type="submit">
@@ -117,7 +123,7 @@ if (isset($_POST["simpan"])) {
                     <p><?= $profil["212279_no_handphone"]; ?></p>
                     <p><?= $profil["212279_alamat"]; ?></p>
                     <a href="../logout.php" class="btn btn-danger">Logout</a>
-                    <a href="" data-bs-toggle="modal" data-bs-target="#editProfilModal" class="btn btn-inti">Edit Profil</a>
+                    <a href="edit_profil.php" class="btn btn-inti">Edit Profil</a>
                   </div>
                 </div>
               </div>

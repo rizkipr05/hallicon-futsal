@@ -1,18 +1,32 @@
 <?php
 session_start();
-require "../session.php";
+require "session_admin.php";
 require "../functions.php";
 
 if ($role !== 'Admin') {
-  header("location:../login.php");
+  header("location:login.php");
 }
 
 // Pagination
 $jmlHalamanPerData = 4;
-$jumlahData = count(query("SELECT sewa_212279.212279_id_sewa,user_212279.212279_nama_lengkap,sewa_212279.212279_tanggal_pesan,sewa_212279.212279_jam_mulai,sewa_212279.212279_lama_sewa,sewa_212279.212279_total,bayar_212279.212279_bukti,bayar_212279.212279_konfirmasi
-FROM sewa_212279
+
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+$statusFilter = isset($_GET['status']) ? $_GET['status'] : '';
+
+$baseQuery = "FROM sewa_212279
 JOIN user_212279 ON sewa_212279.212279_id_user = user_212279.212279_id_user
-JOIN bayar_212279 ON sewa_212279.212279_id_sewa = bayar_212279.212279_id_sewa"));
+LEFT JOIN bayar_212279 ON sewa_212279.212279_id_sewa = bayar_212279.212279_id_sewa
+WHERE 1=1";
+
+if ($search) {
+  $baseQuery .= " AND user_212279.212279_nama_lengkap LIKE '%$search%'";
+}
+
+if ($statusFilter) {
+  $baseQuery .= " AND IFNULL(bayar_212279.212279_konfirmasi,'Belum') = '$statusFilter'";
+}
+
+$jumlahData = count(query("SELECT sewa_212279.212279_id_sewa $baseQuery"));
 $jmlHalaman = ceil($jumlahData / $jmlHalamanPerData);
 
 if (isset($_GET["halaman"])) {
@@ -23,25 +37,24 @@ if (isset($_GET["halaman"])) {
 
 $awalData = ($jmlHalamanPerData * $halamanAktif) - $jmlHalamanPerData;
 
-$pesan = query("SELECT sewa_212279.212279_id_sewa,user_212279.212279_nama_lengkap,sewa_212279.212279_tanggal_pesan,sewa_212279.212279_jam_mulai,sewa_212279.212279_lama_sewa,sewa_212279.212279_total,bayar_212279.212279_bukti,bayar_212279.212279_konfirmasi
-FROM sewa_212279
-JOIN user_212279 ON sewa_212279.212279_id_user = user_212279.212279_id_user
-JOIN bayar_212279 ON sewa_212279.212279_id_sewa = bayar_212279.212279_id_sewa LIMIT $awalData, $jmlHalamanPerData");
-
-
-// untuk mencari data nama si pemesan 
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-$query = "SELECT sewa_212279.212279_id_sewa,user_212279.212279_nama_lengkap,sewa_212279.212279_tanggal_pesan,sewa_212279.212279_jam_mulai,sewa_212279.212279_lama_sewa,sewa_212279.212279_total,bayar_212279.212279_bukti,bayar_212279.212279_konfirmasi
-FROM sewa_212279
-JOIN user_212279 ON sewa_212279.212279_id_user = user_212279.212279_id_user
-JOIN bayar_212279 ON sewa_212279.212279_id_sewa = bayar_212279.212279_id_sewa";
-
+$queryParams = [];
 if ($search) {
-    $query .= " WHERE user_212279.212279_nama_lengkap LIKE '%$search%'";
+  $queryParams['search'] = $search;
+}
+if ($statusFilter) {
+  $queryParams['status'] = $statusFilter;
 }
 
-$query .= " LIMIT $awalData, $jmlHalamanPerData";
-$pesan = query($query);
+$pesan = query("SELECT sewa_212279.212279_id_sewa,
+  user_212279.212279_nama_lengkap,
+  sewa_212279.212279_tanggal_pesan,
+  sewa_212279.212279_jam_mulai,
+  sewa_212279.212279_lama_sewa,
+  sewa_212279.212279_total,
+  bayar_212279.212279_bukti,
+  IFNULL(bayar_212279.212279_konfirmasi,'Belum') AS 212279_konfirmasi
+  $baseQuery
+  LIMIT $awalData, $jmlHalamanPerData");
 
 
 ?>
@@ -95,6 +108,12 @@ $pesan = query($query);
           </a>
         </li>
         <li class="sidebar-item">
+          <a href="harga.php" class="sidebar-link">
+            <i class="fa-solid fa-clock"></i>
+            <span>Harga Per Jam</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
           <a href="admin.php" class="sidebar-link">
             <i class="fa-solid fa-user-tie"></i>
             <span>Data Admin</span>
@@ -118,6 +137,26 @@ $pesan = query($query);
       </nav>
         <!-- Konten -->
         <div class="container">
+          <form method="get" class="row g-2 align-items-end mt-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Cari Nama</label>
+              <input type="text" name="search" class="form-control" value="<?= htmlspecialchars($search); ?>">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-control">
+                <option value="">Semua</option>
+                <option value="Belum" <?= $statusFilter === 'Belum' ? 'selected' : ''; ?>>Belum</option>
+                <option value="Pending" <?= $statusFilter === 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                <option value="Terkonfirmasi" <?= $statusFilter === 'Terkonfirmasi' ? 'selected' : ''; ?>>Terkonfirmasi</option>
+                <option value="Gagal" <?= $statusFilter === 'Gagal' ? 'selected' : ''; ?>>Gagal</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-primary">Filter</button>
+              <a href="pesan.php" class="btn btn-secondary">Reset</a>
+            </div>
+          </form>
         <!-- Konten -->
         <h3 class="mt-4">Data Pesanan</h3>
         <hr>
@@ -152,7 +191,17 @@ $pesan = query($query);
                 <td><?= $row["212279_jam_mulai"]; ?></td>
                 <td><?= $row["212279_lama_sewa"]; ?></td>
                 <td><?= $row["212279_total"]; ?></td>
-                <td><img src="../img/<?= $row["212279_bukti"]; ?>" width="50" height="50"></td>
+                <td>
+                  <?php
+                  $bukti = $row["212279_bukti"];
+                  $buktiPath = "../img/" . $bukti;
+                  if (!empty($bukti) && file_exists($buktiPath)) {
+                    echo '<img src="' . $buktiPath . '" width="50" height="50">';
+                  } else {
+                    echo $bukti ? $bukti : '-';
+                  }
+                  ?>
+                </td>
                 <td><?= $row["212279_konfirmasi"]; ?></td>
                 <td>
                   <?php
@@ -218,23 +267,27 @@ $pesan = query($query);
         </div>
 
         <ul class="pagination">
+          <?php
+          $baseLink = http_build_query($queryParams);
+          $pagePrefix = $baseLink ? $baseLink . '&' : '';
+          ?>
           <?php if ($halamanAktif > 1) : ?>
             <li class="page-item">
-              <a href="?halaman=<?= $halamanAktif - 1; ?>" class="page-link">Previous</a>
+              <a href="?<?= $pagePrefix; ?>halaman=<?= $halamanAktif - 1; ?>" class="page-link">Previous</a>
             </li>
           <?php endif; ?>
 
           <?php for ($i = 1; $i <= $jmlHalaman; $i++) : ?>
             <?php if ($i == $halamanAktif) : ?>
-              <li class="page-item active"><a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a></li>
+              <li class="page-item active"><a class="page-link" href="?<?= $pagePrefix; ?>halaman=<?= $i; ?>"><?= $i; ?></a></li>
             <?php else : ?>
-              <li class="page-item "><a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a></li>
+              <li class="page-item "><a class="page-link" href="?<?= $pagePrefix; ?>halaman=<?= $i; ?>"><?= $i; ?></a></li>
             <?php endif; ?>
           <?php endfor; ?>
 
           <?php if ($halamanAktif < $jmlHalaman) : ?>
             <li class="page-item">
-              <a href="?halaman=<?= $halamanAktif + 1; ?>" class="page-link">Next</a>
+              <a href="?<?= $pagePrefix; ?>halaman=<?= $halamanAktif + 1; ?>" class="page-link">Next</a>
             </li>
           <?php endif; ?>
         </ul>

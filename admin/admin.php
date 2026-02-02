@@ -1,9 +1,9 @@
 <?php
 session_start();
 require "../functions.php";
-require "../session.php";
+require "session_admin.php";
 if ($role !== 'Admin') {
-  header("location:../login.php");
+  header("location:login.php");
 };
 
 // Pagination
@@ -96,6 +96,12 @@ if (isset($_POST["edit"])) {
           <a href="pesan.php" class="sidebar-link">
             <i class="fa-solid fa-money-bills"></i>
             <span>Data Pesanan</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="harga.php" class="sidebar-link">
+            <i class="fa-solid fa-clock"></i>
+            <span>Harga Per Jam</span>
           </a>
         </li>
         <li class="sidebar-item">

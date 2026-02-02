@@ -112,10 +112,16 @@ if (isset($_POST["pesan"])) {
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
       <?php if ($loggedIn) : ?>
-        <!-- Jika sudah login, tampilkan tombol profil -->
-        <a class="btn-getstarted" data-bs-toggle="modal" data-bs-target="#profilModal">
-          <i class="bi bi-person"></i> Profil
-        </a>
+        <div class="dropdown">
+          <a class="btn-getstarted dropdown-toggle profile-trigger" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="../img/<?= $profil["212279_foto"]; ?>" alt="Foto Profil" class="profile-thumb">
+            <span>Profil</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="edit_profil.php">Edit Profil</a></li>
+            <li><a class="dropdown-item" href="../logout.php">Logout</a></li>
+          </ul>
+        </div>
       <?php else : ?>
         <!-- Jika belum login, tampilkan tombol login -->
         <a href="../login.php" class="btn-getstarted" type="submit">
@@ -145,7 +151,7 @@ if (isset($_POST["pesan"])) {
                     <p><?= $profil["212279_no_handphone"]; ?></p>
                     <p><?= $profil["212279_alamat"]; ?></p>
                     <a href="../logout.php" class="btn btn-danger">Logout</a>
-                    <a href="" data-bs-toggle="modal" data-bs-target="#editProfilModal" class="btn btn-inti">Edit Profil</a>
+                    <a href="edit_profil.php" class="btn btn-inti">Edit Profil</a>
                   </div>
                 </div>
               </div>
@@ -275,7 +281,7 @@ if (isset($_POST["pesan"])) {
                           <img src="../img/<?= $row["212279_foto"]; ?>" alt="gambar lapangan" class="img-fluid">
                         </div>
                         <div class="text-center">
-                          <h6 name="harga">Harga : <?= $row["212279_harga"]; ?></h6>
+                          <h6 name="harga">Harga mengikuti jadwal jam bermain</h6>
                         </div>
                         <div class="col">
                           <input type="hidden" name="id_lpg" class="form-control" id="exampleInputPassword1" value="<?= $row["212279_id_lapangan"]; ?>">
@@ -285,7 +291,6 @@ if (isset($_POST["pesan"])) {
                           </div>
                         </div>
                         <div class="col">
-                          <input type="hidden" name="harga" class="form-control" id="exampleInputPassword1" value="<?= $row["212279_harga"]; ?>">
                           <div class="mb-3">
                             <label for="exampleInputPassword1" class="form-label">Lama Main</label>
                             <input type="time" name="jam_mulai" class="form-control" id="exampleInputPassword1">

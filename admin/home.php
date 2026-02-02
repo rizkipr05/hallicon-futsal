@@ -1,9 +1,9 @@
 <?php
 session_start();
 require "../functions.php";
-require "../session.php";
+require "session_admin.php";
 if ($role !== 'Admin') {
-  header("location:../login.php");
+  header("location:login.php");
 }
 
 $lapangan = query("SELECT COUNT(212279_id_lapangan) AS jml_lapangan FROM lapangan_212279")[0];
@@ -57,6 +57,12 @@ $user = query("SELECT COUNT(212279_id_user) AS jml_user FROM user_212279")[0];
           <a href="pesan.php" class="sidebar-link">
             <i class="fa-solid fa-money-bills"></i>
             <span>Data Pesanan</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="harga.php" class="sidebar-link">
+            <i class="fa-solid fa-clock"></i>
+            <span>Harga Per Jam</span>
           </a>
         </li>
         <li class="sidebar-item">

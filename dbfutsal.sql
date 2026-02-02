@@ -24,6 +24,29 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `harga_212279`
+--
+
+CREATE TABLE `harga_212279` (
+  `212279_id_harga` int(11) NOT NULL,
+  `212279_hari` varchar(10) NOT NULL,
+  `212279_jam_mulai` int(11) NOT NULL,
+  `212279_jam_selesai` int(11) NOT NULL,
+  `212279_harga` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data untuk tabel `harga_212279`
+--
+
+INSERT INTO `harga_212279` (`212279_id_harga`, `212279_hari`, `212279_jam_mulai`, `212279_jam_selesai`, `212279_harga`) VALUES
+(1, 'weekday', 8, 16, 1),
+(2, 'weekday', 16, 22, 1),
+(3, 'weekend', 8, 22, 1);
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `admin_212279`
 --
 
@@ -157,6 +180,12 @@ ALTER TABLE `bayar_212279`
   ADD PRIMARY KEY (`212279_id_bayar`);
 
 --
+-- Indeks untuk tabel `harga_212279`
+--
+ALTER TABLE `harga_212279`
+  ADD PRIMARY KEY (`212279_id_harga`);
+
+--
 -- Indeks untuk tabel `lapangan_212279`
 --
 ALTER TABLE `lapangan_212279`
@@ -189,6 +218,12 @@ ALTER TABLE `admin_212279`
 --
 ALTER TABLE `bayar_212279`
   MODIFY `212279_id_bayar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+
+--
+-- AUTO_INCREMENT untuk tabel `harga_212279`
+--
+ALTER TABLE `harga_212279`
+  MODIFY `212279_id_harga` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `lapangan_212279`

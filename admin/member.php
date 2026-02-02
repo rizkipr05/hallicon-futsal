@@ -1,10 +1,10 @@
 <?php
 session_start();
-require "../session.php";
+require "session_admin.php";
 require "../functions.php";
 
 if ($role !== 'Admin') {
-  header("location:/login.php");
+  header("location:login.php");
 }
 
 // Pagination
@@ -69,6 +69,12 @@ $member = query("SELECT * FROM user_212279 LIMIT $awalData, $jmlHalamanPerData")
           <a href="pesan.php" class="sidebar-link">
             <i class="fa-solid fa-money-bills"></i>
             <span>Data Pesanan</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="harga.php" class="sidebar-link">
+            <i class="fa-solid fa-clock"></i>
+            <span>Harga Per Jam</span>
           </a>
         </li>
         <li class="sidebar-item">

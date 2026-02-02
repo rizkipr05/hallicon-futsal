@@ -114,6 +114,19 @@ h6 {
   color: var(--background-color);
 }
 
+.header .profile-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header .profile-thumb {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 
 .header .btn-getstarted:hover {
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.3); /* Menambahkan shadow */

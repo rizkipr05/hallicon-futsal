@@ -1,10 +1,10 @@
 <?php
 session_start();
-require "../session.php";
+require "session_admin.php";
 require "../functions.php";
 
 if ($role !== 'Admin') {
-  header("location:../login.php");
+  header("location:login.php");
 }
 
 $pesan = query("SELECT sewa_212279.212279_id_sewa,user_212279.212279_nama_lengkap,sewa_212279.212279_tanggal_pesan,sewa_212279.212279_jam_mulai,sewa_212279.212279_lama_sewa,sewa_212279.212279_total,bayar_212279.212279_bukti,bayar_212279.212279_konfirmasi
@@ -62,7 +62,17 @@ JOIN bayar_212279 ON sewa_212279.212279_id_sewa = bayar_212279.212279_id_sewa
  <td><?= $row["212279_jam_mulai"]; ?></td>
                 <td><?= $row["212279_lama_sewa"]; ?></td>
                 <td><?= $row["212279_total"]; ?></td>
-                <td><img src="../img/<?= $row["212279_bukti"]; ?>" width="100" height="100"></td>
+                <td>
+                  <?php
+                  $bukti = $row["212279_bukti"];
+                  $buktiPath = "../img/" . $bukti;
+                  if (!empty($bukti) && file_exists($buktiPath)) {
+                    echo '<img src="' . $buktiPath . '" width="100" height="100">';
+                  } else {
+                    echo $bukti ? $bukti : '-';
+                  }
+                  ?>
+                </td>
                 <td><?= $row["212279_konfirmasi"]; ?></td>
               </tr>
             <?php endforeach; ?>

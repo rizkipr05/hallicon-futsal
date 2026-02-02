@@ -2,6 +2,9 @@
 session_start();
 require "../functions.php";
 
+$config = require "../config.php";
+$midtransClientKey = $config['midtrans']['client_key'];
+
 $loggedIn = isset($_SESSION['role']);
 
 if ($loggedIn) {
@@ -28,19 +31,6 @@ if (isset($_POST["simpan"])) {
   }
 }
 
-
-if (isset($_POST["bayar_212279"])) {
-  if (bayar($_POST) > 0) {
-    echo "<script>
-          alert('Berhasil Di Bayar!');
-          document.location.href = 'pesanan.php';
-          </script>";
-  } else {
-    echo "<script>
-          alert('Gagal Bayar!');
-          </script>";
-  }
-}
 
 ?>
 <!DOCTYPE html>
@@ -99,10 +89,16 @@ if (isset($_POST["bayar_212279"])) {
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
       <?php if ($loggedIn) : ?>
-        <!-- Jika sudah login, tampilkan tombol profil -->
-        <a class="btn-getstarted" data-bs-toggle="modal" data-bs-target="#profilModal">
-          <i class="bi bi-person"></i> Profil
-        </a>
+        <div class="dropdown">
+          <a class="btn-getstarted dropdown-toggle profile-trigger" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="../img/<?= $profil["212279_foto"]; ?>" alt="Foto Profil" class="profile-thumb">
+            <span>Profil</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="edit_profil.php">Edit Profil</a></li>
+            <li><a class="dropdown-item" href="../logout.php">Logout</a></li>
+          </ul>
+        </div>
       <?php else : ?>
         <!-- Jika belum login, tampilkan tombol login -->
         <a href="../login.php" class="btn-getstarted" type="submit">
@@ -136,7 +132,7 @@ if (isset($_POST["bayar_212279"])) {
                 <p><?= $profil["212279_no_handphone"]; ?></p>
                 <p><?= $profil["212279_alamat"]; ?></p>
                 <a href="../logout.php" class="btn btn-danger">Logout</a>
-                <a href="" data-bs-toggle="modal" data-bs-target="#editProfilModal" class="btn btn-success">Edit Profil</a>
+                <a href="edit_profil.php" class="btn btn-success">Edit Profil</a>
               </div>
             </div>
           </div>
@@ -237,11 +233,10 @@ if (isset($_POST["bayar_212279"])) {
                 <th scope="col">jam Habis</th>
                 <th scope="col">Total</th>
                 <th scope="col">Konfirmasi</th>
+                <th scope="col">Aksi</th>
               </tr>
             </thead>
             <tbody id="content">
-
-             <div id="bayarModal"></div>
 
              <div id="detailModal"></div>
 
@@ -315,6 +310,7 @@ if (isset($_POST["bayar_212279"])) {
   <script src="../assets/vendor/glightbox/js/glightbox.min.js"></script>
   <script src="../assets/vendor/purecounter/purecounter_vanilla.js"></script>
   <script src="../assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="<?= $midtransClientKey ?>"></script>
 
   <!-- Main JS File -->
   <script src="../assets/js/main.js"></script>
@@ -322,230 +318,178 @@ if (isset($_POST["bayar_212279"])) {
 
   <script>
     $(document).ready(function() {
-    function loadPage(page) {
+      function loadPage(page) {
         $.ajax({
-            url: 'ambil.php',
-            type: 'GET',
-            dataType: 'json',
-            data: { halaman: page },
-            success: function(response) {
+          url: 'ambil.php',
+          type: 'GET',
+          dataType: 'json',
+          data: { halaman: page },
+          success: function(response) {
+            var content = '';
+            var hapusModal = '';
+            var detailModal = '';
 
-                var content = '';
-                var bayarModal = '';
-                var hapusModal = '';
-                var detailModal = '';
-                if (response.data.length > 0 ) {
-                response.data.forEach(function(item, index) {
-                    content += '<tr>';
-                    content += '<th scope="row">' + ((page - 1) * 5 + index + 1) + '</th>';
-                    content += '<td>' + item['212279_tanggal_pesan'] + '</td>';
-                    content += '<td>' + item['212279_nama'] + '</td>';
-                    content += '<td>' + item['212279_jam_mulai'] + '</td>';
-                    content += '<td>' + item['212279_lama_sewa'] + ' Jam</td>';
-                    content += '<td>' + item['212279_jam_habis'] + '</td>';
-                    content += '<td>' + item['212279_total'] + '</td>';
+            if (response.data.length > 0) {
+              response.data.forEach(function(item, index) {
+                var status = item['212279_konfirmasi'] || 'Belum';
+                content += '<tr>';
+                content += '<th scope="row">' + ((page - 1) * 5 + index + 1) + '</th>';
+                content += '<td>' + item['212279_tanggal_pesan'] + '</td>';
+                content += '<td>' + item['212279_nama'] + '</td>';
+                content += '<td>' + item['212279_jam_mulai'] + '</td>';
+                content += '<td>' + item['212279_lama_sewa'] + ' Jam</td>';
+                content += '<td>' + item['212279_jam_habis'] + '</td>';
+                content += '<td>' + item['212279_total'] + '</td>';
+                content += '<td>' + status + '</td>';
 
-                    // Menampilkan tombol berdasarkan konfirmasi
-                    if (item['212279_konfirmasi'] === "Sudah Bayar" || item['212279_konfirmasi'] === "Terkonfirmasi") {
-                        content += '<td><button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#detailModal' + item['212279_id_sewa'] + '">Detail</button></td>';
-                    } else {
-                        content += '<td>' +
-                            '<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bayarModal' + item['212279_id_sewa'] + '">Bayar</button> ' +
-                            '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#hapusModal' + item['212279_id_sewa'] + '">Hapus</button>' +
-                            '</td>';
-                    }
+                if (status === 'Terkonfirmasi') {
+                  content += '<td><button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#detailModal' + item['212279_id_sewa'] + '">Detail</button></td>';
+                } else {
+                  content += '<td>' +
+                    '<button type="button" class="btn btn-success btn-pay" data-id="' + item['212279_id_sewa'] + '">Bayar</button> ' +
+                    '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#hapusModal' + item['212279_id_sewa'] + '">Hapus</button>' +
+                    '</td>';
+                }
+                content += '</tr>';
 
-                    content += '</tr>';
-
-                    // Menambahkan modal ke string modals
-                bayarModal += `
-                <div class="modal fade" id="bayarModal${item['212279_id_sewa']}" tabindex="-1" aria-labelledby="bayarModalLabel" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title">Bayar Lapangan ${item['212279_nama']}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <form action="" method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="id_sewa" value="${item['212279_id_sewa']}">
+                hapusModal +=
+                  `<div class="modal fade" id="hapusModal${item['212279_id_sewa']}" tabindex="-1" aria-labelledby="profilModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus Data</h5>
+                        </div>
                         <div class="modal-body">
-                          <div class="row justify-content-center align-items-center">
-                              <div class="col">
-                                <div class="mb-3">
-                                  <label for="exampleInputPassword1" class="form-label">Jam Main</label>
-                                  <input type="datetime-local" name="tgl_main" class="form-control" id="exampleInputPassword1" value="${item['212279_jam_mulai']}" disabled>
-                                </div>
-                                <div class="mb-3">
-                                  <label for="exampleInputPassword1" class="form-label">Jam Habis</label>
-                                  <input type="datetime-local" name="jam_habis" class="form-control" id="exampleInputPassword1" value="${item['212279_jam_habis']}" disabled>
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="mb-3">
-                                  <label for="exampleInputPassword1" class="form-label">Lama Main</label>
-                                  <input type="text" name="jam_mulai" class="form-control" id="exampleInputPassword1" value="${item['212279_lama_sewa']} jam" disabled>
-                                </div>
-                                <div class="mb-3">
-                                  <label for="exampleInputPassword1" class="form-label">Harga</label>
-                                  <input type="number" name="212279_harga" class="form-control" id="exampleInputPassword1" value="${item['212279_harga']}" disabled>
-                                </div>
-                              </div>
-                              <div class="input-group ">
-                                <div class="input-group-prepend border border-danger">
-                                  <span class="input-group-text">Total</span>
-                                </div>
-                                <input type="number" name="total" class="form-control border border-danger" id="exampleInputPassword1" value="${item['212279_total']}" disabled>
-                              </div>
-                              <div class="mt-3">
-                                <label for="exampleInputPassword1" class="form-label">Transfer ke : BRI 0892322132 a/n Jempol Futsal</label>
-                              </div>
-                              <div class="mt-3">
-                                <label for="exampleInputPassword1" class="form-label">Upload Bukti</label>
-                                <input type="file" name="foto" class="form-control" id="exampleInputPassword1">
-                              </div>
-                            </div>
+                          <p>Anda yakin ingin menghapus data ini?</p>
                         </div>
                         <div class="modal-footer">
-                          <button type="submit" class="btn btn-success" name="bayar_212279">Bayar</button>
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                          <a href="controller/hapus.php?id=${item['212279_id_sewa']}" class="btn btn-danger">Hapus</a>
                         </div>
-                      </form>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                `;
+                  </div>`;
 
-              hapusModal += 
-              `<div class="modal fade" id="hapusModal${item['212279_id_sewa']}" tabindex="-1" aria-labelledby="profilModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus Data</h5>
-                    </div>
-                    <div class="modal-body">
-                      <p>Anda yakin ingin menghapus data ini?</p>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                      <a href="controller/hapus.php?id=${item['212279_id_sewa']}" class="btn btn-danger">Hapus</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-                  `;
-
-                  detailModal += `
-              <div class="modal fade" id="detailModal${item['212279_id_sewa']}" tabindex="-1" role="dialog" aria-labelledby="bayarModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">Detail Pembayaran Lapangan ${item['212279_nama']}</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form action="" method="post">
-                      <div class="modal-body">
-                        <!-- konten form modal -->
-                        <div class="row justify-content-center align-items-center">
-                          <div class="mb-3">
-                            <img src="../img/${item['212279_bukti']}" alt="gambar lapangan_212279" class="img-fluid">
-                          </div>
-                          <div class="col">
+                detailModal += `
+                  <div class="modal fade" id="detailModal${item['212279_id_sewa']}" tabindex="-1" role="dialog" aria-labelledby="bayarModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">Detail Pembayaran Lapangan ${item['212279_nama']}</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="row justify-content-center align-items-center">
                             <div class="mb-3">
-                              <label for="exampleInputPassword1" class="form-label">Jam Main</label>
-                              <input type="datetime-local" name="tgl_main" class="form-control" id="exampleInputPassword1" value="${item['212279_jam_mulai']}" disabled>
+                              <strong>Order ID:</strong> ${item['212279_bukti'] || '-'}
                             </div>
-                            <div class="mb-3">
-                              <label for="exampleInputPassword1" class="form-label">Jam Habis</label>
-                              <input type="datetime-local" name="jam_habis" class="form-control" id="exampleInputPassword1" value="${item['212279_jam_habis']}" disabled>
+                            <div class="col">
+                              <div class="mb-3">
+                                <label class="form-label">Jam Main</label>
+                                <input type="datetime-local" class="form-control" value="${item['212279_jam_mulai']}" disabled>
+                              </div>
+                              <div class="mb-3">
+                                <label class="form-label">Jam Habis</label>
+                                <input type="datetime-local" class="form-control" value="${item['212279_jam_habis']}" disabled>
+                              </div>
                             </div>
-                          </div>
-                          <div class="col">
-                            <div class="mb-3">
-                              <label for="exampleInputPassword1" class="form-label">Lama Main</label>
-                              <input type="text" name="jam_mulai" class="form-control" id="exampleInputPassword1" value="${item['212279_lama_sewa']} jam" disabled>
+                            <div class="col">
+                              <div class="mb-3">
+                                <label class="form-label">Lama Main</label>
+                                <input type="text" class="form-control" value="${item['212279_lama_sewa']} jam" disabled>
+                              </div>
+                              <div class="mb-3">
+                                <label class="form-label">Harga</label>
+                                <input type="number" class="form-control" value="${item['212279_harga']}" disabled>
+                              </div>
                             </div>
-                            <div class="mb-3">
-                              <label for="exampleInputPassword1" class="form-label">Harga</label>
-                              <input type="number" name="212279_harga" class="form-control" id="exampleInputPassword1" value="${item['212279_harga']}" disabled>
-                            </div>
-                          </div>
-                          <div class="input-group ">
-                            <div class="input-group-prepend">
+                            <div class="input-group">
                               <span class="input-group-text">Total</span>
+                              <input type="number" class="form-control" value="${item['212279_total']}" disabled>
                             </div>
-                            <input type="number" name="total" class="form-control " id="exampleInputPassword1" value="${item['212279_total']}" disabled>
+                          </div>
+                          <div class="mt-3">
+                            <h6 class="text-center border border-danger">Status : ${status}</h6>
                           </div>
                         </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        </div>
                       </div>
-                      <div class="mt-3 mx-3">
-                        <h6 class="text-center border border-danger">Status : ${item['212279_konfirmasi']}</h6>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-              `;
-              
-
-                });
-              } else {
-                content += '<tr><td colspan="10" class="text-center">Belum Ada Pesanan</td></tr>';
-                
-              }
-                $('#content').html(content);
-                $('#bayarModal').html(bayarModal);
-                $('#hapusModal').html(hapusModal);
-                $('#detailModal').html(detailModal);
-
-
-                var pagination = '';
-
-                if (page > 1) {
-                    pagination += '<li class="page-item"><a href="#" class="page-link" data-page="' + (page - 1) + '">Previous</a></li>';
-                } else {
-                    pagination += '<li class="page-item disabled"><span class="page-link">Previous</span></li>';
-                }
-
-                for (var i = 1; i <= response.totalPages; i++) {
-                    if (i === page) {
-                        pagination += '<li class="page-item active"><a href="#" class="page-link" data-page="' + i + '">' + i + '</a></li>';
-                    } else {
-                        pagination += '<li class="page-item"><a href="#" class="page-link" data-page="' + i + '">' + i + '</a></li>';
-                    }
-                }
-
-                if (page < response.totalPages) {
-                    pagination += '<li class="page-item"><a href="#" class="page-link" data-page="' + (page + 1) + '">Next</a></li>';
-                } else {
-                    pagination += '<li class="page-item disabled"><span class="page-link">Next</span></li>';
-                }
-
-                $('#pagination').html('<ul class="pagination">' + pagination + '</ul>');
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', status, error);
-                alert('Terjadi kesalahan saat memuat data.');
+                    </div>
+                  </div>`;
+              });
+            } else {
+              content += '<tr><td colspan="9" class="text-center">Belum Ada Pesanan</td></tr>';
             }
+
+            $('#content').html(content);
+            $('#hapusModal').html(hapusModal);
+            $('#detailModal').html(detailModal);
+
+            var pagination = '';
+            if (page > 1) {
+              pagination += '<li class="page-item"><a href="#" class="page-link" data-page="' + (page - 1) + '">Previous</a></li>';
+            } else {
+              pagination += '<li class="page-item disabled"><span class="page-link">Previous</span></li>';
+            }
+
+            for (var i = 1; i <= response.totalPages; i++) {
+              if (i === page) {
+                pagination += '<li class="page-item active"><a href="#" class="page-link" data-page="' + i + '">' + i + '</a></li>';
+              } else {
+                pagination += '<li class="page-item"><a href="#" class="page-link" data-page="' + i + '">' + i + '</a></li>';
+              }
+            }
+
+            if (page < response.totalPages) {
+              pagination += '<li class="page-item"><a href="#" class="page-link" data-page="' + (page + 1) + '">Next</a></li>';
+            } else {
+              pagination += '<li class="page-item disabled"><span class="page-link">Next</span></li>';
+            }
+
+            $('#pagination').html('<ul class="pagination">' + pagination + '</ul>');
+          },
+          error: function(xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+            alert('Terjadi kesalahan saat memuat data.');
+          }
         });
-    }
+      }
 
-    loadPage(1);
+      loadPage(1);
 
-    $('#pagination').on('click', '.page-link', function(e) {
+      $('#pagination').on('click', '.page-link', function(e) {
         e.preventDefault();
         var page = $(this).data('page');
         loadPage(page);
-    });
+      });
 
-    // Hapus modal action
-    $(document).on('click', '.btn-danger', function() {
-        var id_sewa = $(this).data('id'); // Ambil ID dari data attribute
-        $('#hapusModal' + id_sewa).modal('show'); // Tampilkan modal hapus
+      $(document).on('click', '.btn-pay', function() {
+        var idSewa = $(this).data('id');
+        $.ajax({
+          url: 'midtrans_create.php',
+          type: 'POST',
+          dataType: 'json',
+          data: { id_sewa: idSewa },
+          success: function(res) {
+            if (res && res.token) {
+              snap.pay(res.token, {
+                onSuccess: function() { location.reload(); },
+                onPending: function() { location.reload(); },
+                onError: function() { alert('Pembayaran gagal.'); },
+                onClose: function() {}
+              });
+            } else {
+              alert(res.error || 'Gagal membuat transaksi.');
+            }
+          },
+          error: function() {
+            alert('Gagal membuat transaksi.');
+          }
+        });
+      });
     });
-});
-
   </script>
 
 </body>
