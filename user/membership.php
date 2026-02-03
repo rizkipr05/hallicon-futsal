@@ -23,6 +23,12 @@ if (isset($_POST["simpan"])) {
           </script>";
   }
 }
+
+$packagePrices = [];
+$packages = query("SELECT 212279_nama, 212279_harga FROM lapangan_212279");
+foreach ($packages as $pkg) {
+  $packagePrices[strtolower($pkg['212279_nama'])] = (int) $pkg['212279_harga'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,6 +108,7 @@ if (isset($_POST["simpan"])) {
     </div>
   </header>
 
+  <?php if ($loggedIn): ?>
     <!-- Modal Profil -->
     <div class="modal fade" id="profilModal" tabindex="-1" aria-labelledby="profilModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -190,6 +197,7 @@ if (isset($_POST["simpan"])) {
     </div>
   </div>
   <!-- End Edit Modal -->
+  <?php endif; ?>
 
 
   <main class="main">
@@ -214,6 +222,7 @@ if (isset($_POST["simpan"])) {
       <div class="col-xl-3 col-lg-6" data-aos="fade-up" data-aos-delay="100">
         <div class="pricing-item">
           <h3>Paket Bronze</h3>
+          <div class="price">Rp <?= number_format($packagePrices['bronze'] ?? 0, 0, ',', '.'); ?> / jam</div>
           <ul>
             <li>1 Jam Sewa</li>
             <li>Bola Futsal Gratis</li>
@@ -230,6 +239,7 @@ if (isset($_POST["simpan"])) {
       <div class="col-xl-3 col-lg-6" data-aos="fade-up" data-aos-delay="200">
         <div class="pricing-item featured">
           <h3>Paket Silver</h3>
+          <div class="price">Rp <?= number_format($packagePrices['silver'] ?? 0, 0, ',', '.'); ?> / jam</div>
           <ul>
             <li>2 Jam Sewa</li>
             <li>Bola Futsal Gratis</li>
@@ -246,6 +256,7 @@ if (isset($_POST["simpan"])) {
       <div class="col-xl-3 col-lg-6" data-aos="fade-up" data-aos-delay="400">
         <div class="pricing-item">
           <h3>Paket Gold</h3>
+          <div class="price">Rp <?= number_format($packagePrices['gold'] ?? 0, 0, ',', '.'); ?> / jam</div>
           <ul>
             <li>3 Jam Sewa</li>
             <li>Bola Futsal Gratis</li>
@@ -263,6 +274,7 @@ if (isset($_POST["simpan"])) {
         <div class="pricing-item">
           <span class="advanced">Populer</span>
           <h3>Paket Diamond</h3>
+          <div class="price">Rp <?= number_format($packagePrices['diamond'] ?? 0, 0, ',', '.'); ?> / jam</div>
           <ul>
             <li>4 Jam Sewa</li>
             <li>Bola Futsal Gratis</li>

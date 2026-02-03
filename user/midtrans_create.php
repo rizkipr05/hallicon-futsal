@@ -1,6 +1,7 @@
 <?php
 session_start();
 require "../functions.php";
+require_once __DIR__ . "/../vendor/autoload.php";
 
 $config = require "../config.php";
 $midtrans = $config['midtrans'];
@@ -11,6 +12,12 @@ header('Content-Type: application/json');
 if (!isset($_SESSION['id_user'])) {
   http_response_code(403);
   echo json_encode(['error' => 'Anda harus login terlebih dahulu.']);
+  exit;
+}
+
+if (empty($midtrans['server_key'])) {
+  http_response_code(500);
+  echo json_encode(['error' => 'Midtrans belum dikonfigurasi.', 'detail' => 'Server key kosong.']);
   exit;
 }
 
@@ -74,34 +81,22 @@ $payload = [
   ],
 ];
 
-$ch = curl_init();
-curl_setopt_array($ch, [
-  CURLOPT_URL => $midtrans['snap_url'],
-  CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_POST => true,
-  CURLOPT_POSTFIELDS => json_encode($payload),
-  CURLOPT_HTTPHEADER => [
-    'Content-Type: application/json',
-    'Accept: application/json',
-    'Authorization: Basic ' . base64_encode($midtrans['server_key'] . ':'),
-  ],
-]);
+try {
+  \Midtrans\Config::$serverKey = $midtrans['server_key'];
+  \Midtrans\Config::$isProduction = !empty($midtrans['is_sandbox']) ? false : true;
+  \Midtrans\Config::$isSanitized = true;
+  \Midtrans\Config::$is3ds = true;
 
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError = curl_error($ch);
-curl_close($ch);
-
-if ($response === false || $httpCode >= 400) {
+  $result = \Midtrans\Snap::createTransaction($payload);
+  if (empty($result->token)) {
+    throw new Exception('Token tidak ditemukan.');
+  }
+} catch (Exception $e) {
   http_response_code(500);
-  echo json_encode(['error' => 'Gagal membuat transaksi Midtrans.', 'detail' => $curlError ?: $response]);
-  exit;
-}
-
-$result = json_decode($response, true);
-if (!isset($result['token'])) {
-  http_response_code(500);
-  echo json_encode(['error' => 'Respons Midtrans tidak valid.']);
+  echo json_encode([
+    'error' => 'Gagal membuat transaksi Midtrans.',
+    'detail' => $e->getMessage(),
+  ]);
   exit;
 }
 
@@ -113,6 +108,6 @@ if ($bayar) {
 }
 
 echo json_encode([
-  'token' => $result['token'],
-  'redirect_url' => $result['redirect_url'] ?? null,
+  'token' => $result->token,
+  'redirect_url' => $result->redirect_url ?? null,
 ]);

@@ -126,11 +126,16 @@ function getPricingRules()
   }
 
   $rules = [];
-  $result = mysqli_query($conn, "SELECT * FROM harga_212279 ORDER BY 212279_hari, 212279_jam_mulai");
-  if ($result) {
-    while ($row = mysqli_fetch_assoc($result)) {
-      $rules[] = $row;
+  try {
+    $result = mysqli_query($conn, "SELECT * FROM harga_212279 ORDER BY 212279_hari, 212279_jam_mulai");
+    if ($result) {
+      while ($row = mysqli_fetch_assoc($result)) {
+        $rules[] = $row;
+      }
     }
+  } catch (mysqli_sql_exception $e) {
+    // Fallback to defaults if pricing table doesn't exist yet.
+    $rules = [];
   }
 
   if (empty($rules)) {
@@ -246,7 +251,11 @@ function pesan($data)
     $mulai_waktu = strtotime($mulai); // Mengubah format datetime-local menjadi format UNIX timestamp
     $habis_waktu = $mulai_waktu + ($lama * 3600); // Menambahkan waktu sewa dalam jam ke waktu mulai
     $habis = date('Y-m-d H:i:s', $habis_waktu); // Format datetime untuk MySQL
-    $harga = getRateByDatetime($mulai);
+    $hargaPerJam = 0;
+    $lapanganHarga = query("SELECT 212279_harga FROM lapangan_212279 WHERE 212279_id_lapangan = '$idlpg' LIMIT 1");
+    if (!empty($lapanganHarga)) {
+        $hargaPerJam = intval($lapanganHarga[0]['212279_harga']);
+    }
 
     if ($lama <= 0) {
         return false;
@@ -263,9 +272,14 @@ function pesan($data)
         return false;
     } else {
         // Tidak ada bentrokan, lanjutkan dengan penyimpanan data
-        $total = calculateTotalByHours($mulai, $lama);
+        if ($hargaPerJam > 0) {
+            $total = $hargaPerJam * $lama;
+        } else {
+            $hargaPerJam = getRateByDatetime($mulai);
+            $total = calculateTotalByHours($mulai, $lama);
+        }
         mysqli_query($conn, "INSERT INTO sewa_212279 (212279_id_user, 212279_id_lapangan, 212279_tanggal_pesan, 212279_lama_sewa, 212279_jam_mulai, 212279_jam_habis, 212279_harga, 212279_total) 
-                             VALUES ('$userid', '$idlpg', '$tanggal_pesan', '$lama', '$mulai', '$habis', '$harga', '$total')");
+                             VALUES ('$userid', '$idlpg', '$tanggal_pesan', '$lama', '$mulai', '$habis', '$hargaPerJam', '$total')");
 
         return mysqli_affected_rows($conn);
     }

@@ -466,6 +466,11 @@ if (isset($_POST["simpan"])) {
       });
 
       $(document).on('click', '.btn-pay', function() {
+        if (!<?= json_encode($midtransClientKey) ?>) {
+          alert('Midtrans belum dikonfigurasi. Silakan isi client key di config.local.php.');
+          return;
+        }
+
         var idSewa = $(this).data('id');
         $.ajax({
           url: 'midtrans_create.php',
@@ -481,11 +486,16 @@ if (isset($_POST["simpan"])) {
                 onClose: function() {}
               });
             } else {
-              alert(res.error || 'Gagal membuat transaksi.');
+              var detail = res && res.detail ? ('\n' + res.detail) : '';
+              alert((res && res.error ? res.error : 'Gagal membuat transaksi.') + detail);
             }
           },
-          error: function() {
-            alert('Gagal membuat transaksi.');
+          error: function(xhr) {
+            var detail = '';
+            if (xhr && xhr.responseText) {
+              detail = '\n' + xhr.responseText;
+            }
+            alert('Gagal membuat transaksi.' + detail);
           }
         });
       });
