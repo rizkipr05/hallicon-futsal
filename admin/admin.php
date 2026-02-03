@@ -99,6 +99,18 @@ if (isset($_POST["edit"])) {
           </a>
         </li>
         <li class="sidebar-item">
+          <a href="match.php" class="sidebar-link">
+            <i class="fa-solid fa-people-group"></i>
+            <span>Data Match</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="scan_qr.php" class="sidebar-link">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>Scan QR</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
           <a href="harga.php" class="sidebar-link">
             <i class="fa-solid fa-clock"></i>
             <span>Harga Per Jam</span>

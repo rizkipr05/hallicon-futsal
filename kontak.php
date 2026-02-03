@@ -71,6 +71,7 @@ if (isset($_POST["simpan"])) {
               <a href="user/pesanan.php">Pesanan</a>
             </li>
         <?php endif; ?>
+                    <li><a href="user/find_match.php">Find Match</a></li>
                     <li><a href="user/membership.php" >Membership</a></li>
                     <li><a href="kontak.php" class="active">Kontak</a></li>
                 </ul>

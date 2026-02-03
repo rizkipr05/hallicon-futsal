@@ -83,6 +83,7 @@ if (isset($_POST["simpan"])) {
               <a class="active" href="pesanan.php">Pesanan</a>
             </li>
           <?php endif; ?>
+          <li><a href="find_match.php">Find Match</a></li>
           <li><a href="membership.php">Membership</a></li>
           <li><a href="../kontak.php">Kontak</a></li>
         </ul>
@@ -315,6 +316,7 @@ if (isset($_POST["simpan"])) {
   <!-- Main JS File -->
   <script src="../assets/js/main.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
     $(document).ready(function() {
@@ -411,6 +413,13 @@ if (isset($_POST["simpan"])) {
                           <div class="mt-3">
                             <h6 class="text-center border border-danger">Status : ${status}</h6>
                           </div>
+                          ${status === 'Terkonfirmasi' ? `
+                          <div class="mt-4 text-center">
+                            <div class="fw-semibold mb-2">QR Check-in</div>
+                            <div id="qr-${item['212279_id_sewa']}" class="d-inline-block p-2 border rounded bg-white"></div>
+                            <small class="text-muted d-block mt-2">Tunjukkan QR ini ke admin saat check-in.</small>
+                          </div>
+                          ` : ''}
                         </div>
                         <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -426,6 +435,24 @@ if (isset($_POST["simpan"])) {
             $('#content').html(content);
             $('#hapusModal').html(hapusModal);
             $('#detailModal').html(detailModal);
+
+            response.data.forEach(function(item) {
+              var status = item['212279_konfirmasi'] || 'Belum';
+              if (status !== 'Terkonfirmasi') {
+                return;
+              }
+              var containerId = 'qr-' + item['212279_id_sewa'];
+              var el = document.getElementById(containerId);
+              if (!el) {
+                return;
+              }
+              el.innerHTML = '';
+              new QRCode(el, {
+                text: 'SEWA:' + item['212279_id_sewa'],
+                width: 160,
+                height: 160
+              });
+            });
 
             var pagination = '';
             if (page > 1) {

@@ -78,6 +78,7 @@ if (isset($_POST["simpan"])) {
               <a class="nav-link" href="user/pesanan.php">Pesanan</a>
             </li>
           <?php endif; ?>
+          <li><a href="user/find_match.php">Find Match</a></li>
           <li><a href="user/membership.php">Membership</a></li>
           <li><a href="kontak.php">Kontak</a></li>
         </ul>
@@ -309,10 +310,6 @@ if (isset($_POST["simpan"])) {
                 <li><a href="#">Beranda</a></li>
                 <li><a href="user/lapangan.php">Lapangan</a></li>
                 <li><a href="user/membership.php">Membership</a></li>
-              </ul>
-            </div>
-            <div class="col-6 col-lg-4">
-              <ul>
                 <li><a href="kontak.php">Kontak</a></li>
               </ul>
             </div>

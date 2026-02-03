@@ -106,6 +106,7 @@ if (isset($_POST["pesan"])) {
               <a href="pesanan.php">Pesanan</a>
             </li>
           <?php endif; ?>
+          <li><a href="find_match.php">Find Match</a></li>
           <li><a href="membership.php">Membership</a></li>
           <li><a href="../kontak.php">Kontak</a></li>
         </ul>
