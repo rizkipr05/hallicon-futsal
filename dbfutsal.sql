@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Waktu pembuatan: 16 Jan 2025 pada 00.28
+-- Host: localhost
+-- Waktu pembuatan: 04 Feb 2026 pada 01.16
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -20,29 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `dbfutsal`
 --
-
--- --------------------------------------------------------
-
---
--- Struktur dari tabel `harga_212279`
---
-
-CREATE TABLE `harga_212279` (
-  `212279_id_harga` int(11) NOT NULL,
-  `212279_hari` varchar(10) NOT NULL,
-  `212279_jam_mulai` int(11) NOT NULL,
-  `212279_jam_selesai` int(11) NOT NULL,
-  `212279_harga` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
---
--- Dumping data untuk tabel `harga_212279`
---
-
-INSERT INTO `harga_212279` (`212279_id_harga`, `212279_hari`, `212279_jam_mulai`, `212279_jam_selesai`, `212279_harga`) VALUES
-(1, 'weekday', 8, 16, 1),
-(2, 'weekday', 16, 22, 1),
-(3, 'weekend', 8, 22, 1);
 
 -- --------------------------------------------------------
 
@@ -86,7 +63,8 @@ CREATE TABLE `bayar_212279` (
 
 INSERT INTO `bayar_212279` (`212279_id_bayar`, `212279_id_sewa`, `212279_bukti`, `212279_tanggal_upload`, `212279_konfirmasi`) VALUES
 (58, 129, '67878d8cd5caf.jpg', '2025-01-15', 'Terkonfirmasi'),
-(60, 131, '6787dcc0786ba.png', '2025-01-15', 'Terkonfirmasi');
+(60, 131, '6787dcc0786ba.png', '2025-01-15', 'Terkonfirmasi'),
+(61, 135, 'SEWA-135-1770079109', '2026-02-03', 'Terkonfirmasi');
 
 -- --------------------------------------------------------
 
@@ -137,7 +115,8 @@ CREATE TABLE `sewa_212279` (
 INSERT INTO `sewa_212279` (`212279_id_sewa`, `212279_id_user`, `212279_id_lapangan`, `212279_tanggal_pesan`, `212279_lama_sewa`, `212279_jam_mulai`, `212279_jam_habis`, `212279_harga`, `212279_total`) VALUES
 (129, 100, 25, '2025-01-15', 12, '2025-01-15 10:28:00', '2025-01-15 22:28:00', 30000, 360000),
 (131, 100, 23, '2025-01-15', 1, '2025-01-15 23:04:00', '2025-01-16 00:04:00', 10000, 10000),
-(132, 100, 24, '2025-01-16', 0, '2025-01-20 06:21:00', '2025-01-20 06:21:00', 20000, 0);
+(135, 100, 23, '2026-02-03', 11, '2026-02-13 06:18:00', '2026-02-13 17:18:00', 10000, 110000),
+(136, 100, 23, '2026-02-03', 11, '2026-02-26 07:17:00', '2026-02-26 18:17:00', 10000, 110000);
 
 -- --------------------------------------------------------
 
@@ -180,12 +159,6 @@ ALTER TABLE `bayar_212279`
   ADD PRIMARY KEY (`212279_id_bayar`);
 
 --
--- Indeks untuk tabel `harga_212279`
---
-ALTER TABLE `harga_212279`
-  ADD PRIMARY KEY (`212279_id_harga`);
-
---
 -- Indeks untuk tabel `lapangan_212279`
 --
 ALTER TABLE `lapangan_212279`
@@ -217,13 +190,7 @@ ALTER TABLE `admin_212279`
 -- AUTO_INCREMENT untuk tabel `bayar_212279`
 --
 ALTER TABLE `bayar_212279`
-  MODIFY `212279_id_bayar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
-
---
--- AUTO_INCREMENT untuk tabel `harga_212279`
---
-ALTER TABLE `harga_212279`
-  MODIFY `212279_id_harga` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `212279_id_bayar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT untuk tabel `lapangan_212279`
@@ -235,7 +202,7 @@ ALTER TABLE `lapangan_212279`
 -- AUTO_INCREMENT untuk tabel `sewa_212279`
 --
 ALTER TABLE `sewa_212279`
-  MODIFY `212279_id_sewa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
+  MODIFY `212279_id_sewa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=137;
 
 --
 -- AUTO_INCREMENT untuk tabel `user_212279`
