@@ -117,37 +117,79 @@ function edit($data)
   return mysqli_affected_rows($conn);
 }
 
-function getPricingRules()
+function getPricingRules($useFallbackDefaults = true)
 {
   global $conn;
-  static $rulesCache = null;
-  if ($rulesCache !== null) {
-    return $rulesCache;
-  }
+  ensurePricingTable();
+  static $rulesCacheRaw = null;
+  if ($rulesCacheRaw === null) {
+    $rulesCacheRaw = [];
 
-  $rules = [];
-  try {
-    $result = mysqli_query($conn, "SELECT * FROM harga_212279 ORDER BY 212279_hari, 212279_jam_mulai");
-    if ($result) {
-      while ($row = mysqli_fetch_assoc($result)) {
-        $rules[] = $row;
+    try {
+      $result = mysqli_query($conn, "SELECT * FROM harga_212279 ORDER BY 212279_hari, 212279_jam_mulai");
+      if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+          $rulesCacheRaw[] = $row;
+        }
       }
+    } catch (mysqli_sql_exception $e) {
+      $rulesCacheRaw = [];
     }
-  } catch (mysqli_sql_exception $e) {
-    // Fallback to defaults if pricing table doesn't exist yet.
-    $rules = [];
   }
 
-  if (empty($rules)) {
-    $rules = [
+  if (empty($rulesCacheRaw) && $useFallbackDefaults) {
+    return [
       ['212279_hari' => 'weekday', '212279_jam_mulai' => 8,  '212279_jam_selesai' => 16, '212279_harga' => 1],
       ['212279_hari' => 'weekday', '212279_jam_mulai' => 16, '212279_jam_selesai' => 22, '212279_harga' => 1],
       ['212279_hari' => 'weekend', '212279_jam_mulai' => 8,  '212279_jam_selesai' => 22, '212279_harga' => 1],
     ];
   }
 
-  $rulesCache = $rules;
-  return $rules;
+  return $rulesCacheRaw;
+}
+
+function ensurePricingTable()
+{
+  global $conn;
+  try {
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS harga_212279 (
+      212279_id_harga INT(11) NOT NULL AUTO_INCREMENT,
+      212279_hari VARCHAR(10) NOT NULL,
+      212279_jam_mulai TINYINT NOT NULL,
+      212279_jam_selesai TINYINT NOT NULL,
+      212279_harga INT(11) NOT NULL,
+      PRIMARY KEY (212279_id_harga)
+    ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci");
+    seedDefaultPricingRules();
+    return true;
+  } catch (mysqli_sql_exception $e) {
+    return false;
+  }
+}
+
+function seedDefaultPricingRules()
+{
+  global $conn;
+  try {
+    $res = mysqli_query($conn, "SELECT COUNT(*) AS total FROM harga_212279");
+    if ($res && ($row = mysqli_fetch_assoc($res))) {
+      if (intval($row['total']) > 0) {
+        return;
+      }
+    }
+    mysqli_query($conn, "INSERT INTO harga_212279 (212279_hari, 212279_jam_mulai, 212279_jam_selesai, 212279_harga) VALUES
+      ('weekday', 8, 16, 100000),
+      ('weekday', 16, 22, 150000),
+      ('weekend', 8, 22, 170000)");
+  } catch (mysqli_sql_exception $e) {
+    // ignore seeding errors
+  }
+}
+
+function hasPricingRules()
+{
+  $rules = getPricingRules(false);
+  return !empty($rules);
 }
 
 function tambahHarga($data)
@@ -191,6 +233,126 @@ function hapusHarga($id)
   return mysqli_affected_rows($conn);
 }
 
+function ensureMembershipTable()
+{
+  global $conn;
+  try {
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS membership_212279 (
+      212279_id_membership INT(11) NOT NULL AUTO_INCREMENT,
+      212279_nama VARCHAR(50) NOT NULL,
+      212279_harga INT(11) NOT NULL,
+      212279_durasi_jam INT(11) NOT NULL,
+      212279_kapasitas INT(11) NOT NULL,
+      212279_bola_gratis TINYINT(1) NOT NULL DEFAULT 1,
+      212279_minuman_gratis TINYINT(1) NOT NULL DEFAULT 0,
+      212279_diskon_hari_kerja TINYINT(1) NOT NULL DEFAULT 0,
+      212279_featured TINYINT(1) NOT NULL DEFAULT 0,
+      212279_populer TINYINT(1) NOT NULL DEFAULT 0,
+      212279_urutan INT(11) NOT NULL DEFAULT 0,
+      212279_aktif TINYINT(1) NOT NULL DEFAULT 1,
+      PRIMARY KEY (212279_id_membership)
+    ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci");
+    seedDefaultMemberships();
+    return true;
+  } catch (mysqli_sql_exception $e) {
+    return false;
+  }
+}
+
+function seedDefaultMemberships()
+{
+  global $conn;
+  try {
+    $res = mysqli_query($conn, "SELECT COUNT(*) AS total FROM membership_212279");
+    if ($res && ($row = mysqli_fetch_assoc($res))) {
+      if (intval($row['total']) > 0) {
+        return;
+      }
+    }
+    mysqli_query($conn, "INSERT INTO membership_212279
+      (212279_nama, 212279_harga, 212279_durasi_jam, 212279_kapasitas, 212279_bola_gratis, 212279_minuman_gratis, 212279_diskon_hari_kerja, 212279_featured, 212279_populer, 212279_urutan, 212279_aktif)
+      VALUES
+      ('Bronze', 10000, 1, 10, 1, 0, 0, 0, 0, 1, 1),
+      ('Silver', 30000, 2, 12, 1, 1, 0, 1, 0, 2, 1),
+      ('Gold', 30000, 3, 15, 1, 1, 1, 0, 0, 3, 1),
+      ('Diamond', 40000, 4, 20, 1, 1, 1, 0, 1, 4, 1)");
+  } catch (mysqli_sql_exception $e) {
+    // ignore seeding errors
+  }
+}
+
+function getMembershipPackages($onlyActive = true)
+{
+  global $conn;
+  ensureMembershipTable();
+  $filter = $onlyActive ? "WHERE 212279_aktif = 1" : "";
+  return query("SELECT * FROM membership_212279 $filter ORDER BY 212279_urutan, 212279_id_membership");
+}
+
+function tambahMembership($data)
+{
+  global $conn;
+  $nama = htmlspecialchars($data['nama']);
+  $harga = intval($data['harga']);
+  $durasi = intval($data['durasi_jam']);
+  $kapasitas = intval($data['kapasitas']);
+  $bola = isset($data['bola_gratis']) ? 1 : 0;
+  $minuman = isset($data['minuman_gratis']) ? 1 : 0;
+  $diskon = isset($data['diskon_hari_kerja']) ? 1 : 0;
+  $featured = isset($data['featured']) ? 1 : 0;
+  $populer = isset($data['populer']) ? 1 : 0;
+  $urutan = intval($data['urutan']);
+  $aktif = isset($data['aktif']) ? 1 : 0;
+
+  mysqli_query($conn, "INSERT INTO membership_212279
+    (212279_nama, 212279_harga, 212279_durasi_jam, 212279_kapasitas, 212279_bola_gratis, 212279_minuman_gratis, 212279_diskon_hari_kerja, 212279_featured, 212279_populer, 212279_urutan, 212279_aktif)
+    VALUES
+    ('$nama', '$harga', '$durasi', '$kapasitas', '$bola', '$minuman', '$diskon', '$featured', '$populer', '$urutan', '$aktif')");
+
+  return mysqli_affected_rows($conn);
+}
+
+function editMembership($data)
+{
+  global $conn;
+  $id = intval($data['id_membership']);
+  $nama = htmlspecialchars($data['nama']);
+  $harga = intval($data['harga']);
+  $durasi = intval($data['durasi_jam']);
+  $kapasitas = intval($data['kapasitas']);
+  $bola = isset($data['bola_gratis']) ? 1 : 0;
+  $minuman = isset($data['minuman_gratis']) ? 1 : 0;
+  $diskon = isset($data['diskon_hari_kerja']) ? 1 : 0;
+  $featured = isset($data['featured']) ? 1 : 0;
+  $populer = isset($data['populer']) ? 1 : 0;
+  $urutan = intval($data['urutan']);
+  $aktif = isset($data['aktif']) ? 1 : 0;
+
+  mysqli_query($conn, "UPDATE membership_212279 SET
+    212279_nama = '$nama',
+    212279_harga = '$harga',
+    212279_durasi_jam = '$durasi',
+    212279_kapasitas = '$kapasitas',
+    212279_bola_gratis = '$bola',
+    212279_minuman_gratis = '$minuman',
+    212279_diskon_hari_kerja = '$diskon',
+    212279_featured = '$featured',
+    212279_populer = '$populer',
+    212279_urutan = '$urutan',
+    212279_aktif = '$aktif'
+    WHERE 212279_id_membership = '$id'");
+
+  return mysqli_affected_rows($conn);
+}
+
+function hapusMembership($id)
+{
+  global $conn;
+  $id = intval($id);
+  mysqli_query($conn, "DELETE FROM membership_212279 WHERE 212279_id_membership = '$id'");
+  return mysqli_affected_rows($conn);
+}
+
 function parseDurationHours($timeStr)
 {
   if (!is_string($timeStr) || $timeStr === '') {
@@ -203,13 +365,13 @@ function parseDurationHours($timeStr)
   return max(0, intval($timeStr));
 }
 
-function getRateByDatetime($datetimeStr)
+function getRateByDatetime($datetimeStr, $fallbackRate = 1)
 {
   $dt = new DateTime($datetimeStr);
   $dayOfWeek = intval($dt->format('N')); // 1=Mon ... 7=Sun
   $hour = intval($dt->format('G')); // 0-23
   $dayType = ($dayOfWeek >= 6) ? 'weekend' : 'weekday';
-  $rules = getPricingRules();
+  $rules = getPricingRules(false);
 
   foreach ($rules as $rule) {
     if ($rule['212279_hari'] !== $dayType) {
@@ -222,17 +384,17 @@ function getRateByDatetime($datetimeStr)
     }
   }
 
-  return 1;
+  return intval($fallbackRate);
 }
 
-function calculateTotalByHours($datetimeStr, $durationHours)
+function calculateTotalByHours($datetimeStr, $durationHours, $fallbackRate = 1)
 {
   $durationHours = max(0, intval($durationHours));
   $dt = new DateTime($datetimeStr);
   $total = 0;
 
   for ($i = 0; $i < $durationHours; $i++) {
-    $total += getRateByDatetime($dt->format('Y-m-d H:i:s'));
+    $total += getRateByDatetime($dt->format('Y-m-d H:i:s'), $fallbackRate);
     $dt->modify('+1 hour');
   }
 
@@ -256,6 +418,8 @@ function pesan($data)
     if (!empty($lapanganHarga)) {
         $hargaPerJam = intval($lapanganHarga[0]['212279_harga']);
     }
+    $fallbackRate = $hargaPerJam > 0 ? $hargaPerJam : 1;
+    $useDynamicPricing = hasPricingRules();
 
     if ($lama <= 0) {
         return false;
@@ -272,11 +436,16 @@ function pesan($data)
         return false;
     } else {
         // Tidak ada bentrokan, lanjutkan dengan penyimpanan data
-        if ($hargaPerJam > 0) {
-            $total = $hargaPerJam * $lama;
+        if ($useDynamicPricing) {
+            $hargaPerJam = getRateByDatetime($mulai, $fallbackRate);
+            $total = calculateTotalByHours($mulai, $lama, $fallbackRate);
         } else {
-            $hargaPerJam = getRateByDatetime($mulai);
-            $total = calculateTotalByHours($mulai, $lama);
+            if ($hargaPerJam > 0) {
+                $total = $hargaPerJam * $lama;
+            } else {
+                $hargaPerJam = getRateByDatetime($mulai, $fallbackRate);
+                $total = calculateTotalByHours($mulai, $lama, $fallbackRate);
+            }
         }
         mysqli_query($conn, "INSERT INTO sewa_212279 (212279_id_user, 212279_id_lapangan, 212279_tanggal_pesan, 212279_lama_sewa, 212279_jam_mulai, 212279_jam_habis, 212279_harga, 212279_total) 
                              VALUES ('$userid', '$idlpg', '$tanggal_pesan', '$lama', '$mulai', '$habis', '$hargaPerJam', '$total')");

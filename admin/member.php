@@ -89,7 +89,13 @@ $member = query("SELECT * FROM user_212279 LIMIT $awalData, $jmlHalamanPerData")
             <span>Harga Per Jam</span>
           </a>
         </li>
-        <li class="sidebar-item">
+                <li class="sidebar-item">
+          <a href="membership.php" class="sidebar-link">
+            <i class="fa-solid fa-id-card"></i>
+            <span>Membership</span>
+          </a>
+        </li>
+<li class="sidebar-item">
           <a href="admin.php" class="sidebar-link">
             <i class="fa-solid fa-user-tie"></i>
             <span>Data Admin</span>

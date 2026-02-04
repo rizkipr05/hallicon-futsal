@@ -316,7 +316,20 @@ if (isset($_POST["simpan"])) {
   <!-- Main JS File -->
   <script src="../assets/js/main.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="../assets/vendor/qrcode.min.js"></script>
+  <script>
+    (function() {
+      if (typeof QRCode !== 'undefined') {
+        return;
+      }
+      const fallback = document.createElement('script');
+      fallback.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      fallback.onerror = function() {
+        console.warn('Library QRCode tidak ditemukan. Simpan file qrcode.min.js ke assets/vendor.');
+      };
+      document.body.appendChild(fallback);
+    })();
+  </script>
 
   <script>
     $(document).ready(function() {

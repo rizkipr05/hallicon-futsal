@@ -73,7 +73,13 @@ if ($role !== 'Admin') {
             <span>Harga Per Jam</span>
           </a>
         </li>
-        <li class="sidebar-item">
+                <li class="sidebar-item">
+          <a href="membership.php" class="sidebar-link">
+            <i class="fa-solid fa-id-card"></i>
+            <span>Membership</span>
+          </a>
+        </li>
+<li class="sidebar-item">
           <a href="admin.php" class="sidebar-link">
             <i class="fa-solid fa-user-tie"></i>
             <span>Data Admin</span>
@@ -99,7 +105,11 @@ if ($role !== 'Admin') {
         <hr>
         <div class="row g-4">
           <div class="col-lg-5">
-            <div id="qr-reader" class="border rounded p-2 bg-white"></div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <button type="button" id="start-scan" class="btn btn-outline-primary btn-sm">Aktifkan Kamera</button>
+              <button type="button" id="stop-scan" class="btn btn-outline-secondary btn-sm" disabled>Stop</button>
+            </div>
+            <div id="qr-reader" class="border rounded p-2 bg-white" style="min-height: 260px;"></div>
             <p class="text-muted mt-2">Arahkan kamera ke QR code pesanan.</p>
           </div>
           <div class="col-lg-7">
@@ -133,14 +143,34 @@ if ($role !== 'Admin') {
       });
     </script>
 
-    <script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
+    <script src="../assets/vendor/html5-qrcode.min.js"></script>
+    <script>
+      (function() {
+        if (typeof Html5Qrcode !== 'undefined') {
+          return;
+        }
+        const fallback = document.createElement('script');
+        fallback.src = 'https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js';
+        fallback.onload = function() {};
+        fallback.onerror = function() {
+          const status = document.getElementById('scan-status');
+          status.className = 'alert alert-warning';
+          status.textContent = 'Library kamera tidak ditemukan. Simpan file html5-qrcode.min.js ke assets/vendor.';
+        };
+        document.body.appendChild(fallback);
+      })();
+    </script>
     <script>
       const statusEl = document.getElementById('scan-status');
       const detailEl = document.getElementById('scan-detail');
       const manualInput = document.getElementById('manual-input');
       const manualSubmit = document.getElementById('manual-submit');
+      const startBtn = document.getElementById('start-scan');
+      const stopBtn = document.getElementById('stop-scan');
 
       let isProcessing = false;
+      let isScanning = false;
+      let qrReader = null;
 
       function setStatus(type, message) {
         statusEl.className = 'alert alert-' + type;
@@ -192,18 +222,63 @@ if ($role !== 'Admin') {
         checkPayload(manualInput.value.trim());
       });
 
-      const qrReader = new Html5Qrcode('qr-reader');
-      const config = { fps: 10, qrbox: 250 };
+      async function startScanner() {
+        if (isScanning) {
+          return;
+        }
+        setStatus('info', 'Meminta izin kamera...');
+        if (!qrReader) {
+          qrReader = new Html5Qrcode('qr-reader');
+        }
+        const config = { fps: 10, qrbox: 250 };
+        try {
+          const cameras = await Html5Qrcode.getCameras();
+          if (!cameras || cameras.length === 0) {
+            setStatus('warning', 'Kamera tidak terdeteksi. Cek izin kamera di browser.');
+            return;
+          }
+          await qrReader.start(
+            { facingMode: 'environment' },
+            config,
+            (decodedText) => {
+              checkPayload(decodedText);
+            },
+            () => {}
+          );
+          isScanning = true;
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+          setStatus('info', 'Kamera aktif. Arahkan QR.');
+        } catch (err) {
+          isScanning = false;
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+          const message = err && err.message ? err.message : 'Kamera tidak tersedia. Gunakan input manual.';
+          setStatus('warning', message);
+        }
+      }
 
-      qrReader.start(
-        { facingMode: 'environment' },
-        config,
-        (decodedText) => {
-          checkPayload(decodedText);
-        },
-        () => {}
-      ).catch(() => {
-        setStatus('warning', 'Kamera tidak tersedia. Gunakan input manual.');
+      async function stopScanner() {
+        if (!qrReader || !isScanning) {
+          return;
+        }
+        try {
+          await qrReader.stop();
+        } catch (err) {
+          // ignore
+        }
+        isScanning = false;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+
+      startBtn.addEventListener('click', startScanner);
+      stopBtn.addEventListener('click', stopScanner);
+
+      window.addEventListener('beforeunload', function() {
+        if (qrReader && isScanning) {
+          qrReader.stop().catch(() => {});
+        }
       });
     </script>
 

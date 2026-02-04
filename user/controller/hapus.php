@@ -1,19 +1,19 @@
 <?php
 require "../../functions.php";
-$id_user = $_GET["id"];
+$id_sewa = $_GET["id"];
 
-if (hapusPesan($id_user) > 0) {
+if (hapusPesan($id_sewa) > 0) {
   echo "
   <script>
     alert('Data Berhasil Dihapus');
-    document.location.href = '../bayar.php'; 
+    document.location.href = '../pesanan.php'; 
   </script>
   ";
 } else {
   echo "
   <script>
     alert('Data Gagal Dihapus');
-    document.location.href = '../bayar.php'; 
+    document.location.href = '../pesanan.php'; 
   </script>
   ";
 }

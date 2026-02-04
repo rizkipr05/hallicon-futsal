@@ -24,6 +24,18 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `harga_212279`
+--
+
+CREATE TABLE `harga_212279` (
+  `212279_id_harga` int(11) NOT NULL,
+  `212279_hari` varchar(10) NOT NULL,
+  `212279_jam_mulai` tinyint(4) NOT NULL,
+  `212279_jam_selesai` tinyint(4) NOT NULL,
+  `212279_harga` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
 -- Struktur dari tabel `admin_212279`
 --
 
@@ -165,6 +177,12 @@ ALTER TABLE `lapangan_212279`
   ADD PRIMARY KEY (`212279_id_lapangan`);
 
 --
+-- Indeks untuk tabel `harga_212279`
+--
+ALTER TABLE `harga_212279`
+  ADD PRIMARY KEY (`212279_id_harga`);
+
+--
 -- Indeks untuk tabel `sewa_212279`
 --
 ALTER TABLE `sewa_212279`
@@ -197,6 +215,12 @@ ALTER TABLE `bayar_212279`
 --
 ALTER TABLE `lapangan_212279`
   MODIFY `212279_id_lapangan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT untuk tabel `harga_212279`
+--
+ALTER TABLE `harga_212279`
+  MODIFY `212279_id_harga` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT untuk tabel `sewa_212279`

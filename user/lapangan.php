@@ -17,6 +17,8 @@ if ($loggedIn) {
 
 
 $lapangan = query("SELECT * FROM lapangan_212279");
+$pricingRules = getPricingRules();
+$now = date('Y-m-d H:i:s');
 
 
 
@@ -244,9 +246,19 @@ if (isset($_POST["pesan"])) {
     <section id="courses" class="courses section">
       <div class="container">
 
+        <div class="row mb-4">
+          <div class="col-12 d-flex align-items-center gap-2">
+            <h3 class="mb-0">Harga Per Jam</h3>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#hargaModal">
+              Lihat Harga
+            </button>
+          </div>
+        </div>
+
         <div class="row gy-4">
 
           <?php foreach ($lapangan as $row) : ?>
+            <?php $displayRate = getRateByDatetime($now, (int) $row["212279_harga"]); ?>
 
             <div class="col-6 col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="zoom-in" data-aos-delay="100">
               <div class="course-item">
@@ -256,7 +268,7 @@ if (isset($_POST["pesan"])) {
                 <div class="p-3 text-content">
                   <h3><?= $row["212279_nama"]; ?></h3>
                   <p class="description"><?= $row["212279_keterangan"]; ?></p>
-                  <p class="mb-2"><strong>Harga:</strong> Rp <?= number_format((int) $row["212279_harga"], 0, ',', '.'); ?> / jam</p>
+                  <p class="mb-2"><strong>Harga:</strong> Rp <?= number_format($displayRate, 0, ',', '.'); ?> / jam</p>
                   <?php if ($loggedIn) : ?>
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#pesanModal<?= $row["212279_id_lapangan"]; ?>">Pesan</button>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#jadwalModal<?= $row["212279_id_lapangan"]; ?>" data-id="<?= $row["212279_id_lapangan"]; ?>">
@@ -285,7 +297,7 @@ if (isset($_POST["pesan"])) {
                           <img src="../img/<?= $row["212279_foto"]; ?>" alt="gambar lapangan" class="img-fluid">
                         </div>
                         <div class="text-center">
-                          <h6 name="harga">Harga paket: Rp <?= number_format((int) $row["212279_harga"], 0, ',', '.'); ?> / jam</h6>
+                          <h6 name="harga">Harga saat ini: Rp <?= number_format($displayRate, 0, ',', '.'); ?> / jam</h6>
                         </div>
                         <div class="col">
                           <input type="hidden" name="id_lpg" class="form-control" id="exampleInputPassword1" value="<?= $row["212279_id_lapangan"]; ?>">
@@ -346,6 +358,45 @@ if (isset($_POST["pesan"])) {
         </div> <!-- End Course Item-->
       </div>
       <section>
+
+      <div class="modal fade" id="hargaModal" tabindex="-1" aria-labelledby="hargaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="hargaModalLabel">Harga Per Jam</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <?php if (count($pricingRules) === 0) : ?>
+                <div class="alert alert-info mb-0">Harga per jam belum diatur.</div>
+              <?php else : ?>
+                <div class="table-responsive">
+                  <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Hari</th>
+                        <th>Jam Mulai</th>
+                        <th>Jam Selesai</th>
+                        <th>Harga / Jam</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php foreach ($pricingRules as $rule) : ?>
+                        <tr>
+                          <td><?= $rule['212279_hari'] === 'weekend' ? 'Weekend' : 'Weekday'; ?></td>
+                          <td><?= sprintf('%02d:00', $rule['212279_jam_mulai']); ?></td>
+                          <td><?= sprintf('%02d:00', $rule['212279_jam_selesai']); ?></td>
+                          <td>Rp <?= number_format((int) $rule['212279_harga'], 0, ',', '.'); ?></td>
+                        </tr>
+                      <?php endforeach; ?>
+                    </tbody>
+                  </table>
+                </div>
+              <?php endif; ?>
+            </div>
+          </div>
+        </div>
+      </div>
   </main>
 
   <footer id="footer" class="footer position-relative light-background">

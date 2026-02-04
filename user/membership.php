@@ -24,11 +24,8 @@ if (isset($_POST["simpan"])) {
   }
 }
 
-$packagePrices = [];
-$packages = query("SELECT 212279_nama, 212279_harga FROM lapangan_212279");
-foreach ($packages as $pkg) {
-  $packagePrices[strtolower($pkg['212279_nama'])] = (int) $pkg['212279_harga'];
-}
+$membershipReady = ensureMembershipTable();
+$packages = $membershipReady ? getMembershipPackages(true) : [];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -220,75 +217,38 @@ foreach ($packages as $pkg) {
     <section id="pricing" class="pricing section">
   <div class="container">
     <div class="row gy-3">
-      <div class="col-xl-3 col-lg-6" data-aos="fade-up" data-aos-delay="100">
-        <div class="pricing-item">
-          <h3>Paket Bronze</h3>
-          <div class="price">Rp <?= number_format($packagePrices['bronze'] ?? 0, 0, ',', '.'); ?> / jam</div>
-          <ul>
-            <li>1 Jam Sewa</li>
-            <li>Bola Futsal Gratis</li>
-            <li>Kapasitas 10 Orang</li>
-            <li class="na">Minuman Gratis</li>
-            <li class="na">Diskon Hari Kerja</li>
-          </ul>
-          <div class="btn-wrap">
-            <a href="lapangan.php" class="btn-buy">Pesan Sekarang</a>
-          </div>
+      <?php if (count($packages) === 0): ?>
+        <div class="col-12">
+          <div class="alert alert-info mb-0">Paket membership belum tersedia.</div>
         </div>
-      </div><!-- End Pricing Item -->
-
-      <div class="col-xl-3 col-lg-6" data-aos="fade-up" data-aos-delay="200">
-        <div class="pricing-item featured">
-          <h3>Paket Silver</h3>
-          <div class="price">Rp <?= number_format($packagePrices['silver'] ?? 0, 0, ',', '.'); ?> / jam</div>
-          <ul>
-            <li>2 Jam Sewa</li>
-            <li>Bola Futsal Gratis</li>
-            <li>Kapasitas 12 Orang</li>
-            <li>Minuman Gratis</li>
-            <li class="na">Diskon Hari Kerja</li>
-          </ul>
-          <div class="btn-wrap">
-            <a href="lapangan.php" class="btn-buy">Pesan Sekarang</a>
+      <?php endif; ?>
+      <?php $delay = 100; ?>
+      <?php foreach ($packages as $pkg): ?>
+        <?php
+          $featuredClass = $pkg['212279_featured'] ? ' featured' : '';
+          $delay = min(400, $delay);
+        ?>
+        <div class="col-xl-3 col-lg-6" data-aos="fade-up" data-aos-delay="<?= $delay; ?>">
+          <div class="pricing-item<?= $featuredClass; ?>">
+            <?php if ($pkg['212279_populer']): ?>
+              <span class="advanced">Populer</span>
+            <?php endif; ?>
+            <h3>Paket <?= htmlspecialchars($pkg['212279_nama']); ?></h3>
+            <div class="price">Rp <?= number_format((int) $pkg['212279_harga'], 0, ',', '.'); ?> / jam</div>
+            <ul>
+              <li><?= (int) $pkg['212279_durasi_jam']; ?> Jam Sewa</li>
+              <li<?= $pkg['212279_bola_gratis'] ? '' : ' class="na"'; ?>>Bola Futsal Gratis</li>
+              <li>Kapasitas <?= (int) $pkg['212279_kapasitas']; ?> Orang</li>
+              <li<?= $pkg['212279_minuman_gratis'] ? '' : ' class="na"'; ?>>Minuman Gratis</li>
+              <li<?= $pkg['212279_diskon_hari_kerja'] ? '' : ' class="na"'; ?>>Diskon Hari Kerja</li>
+            </ul>
+            <div class="btn-wrap">
+              <a href="lapangan.php" class="btn-buy">Pesan Sekarang</a>
+            </div>
           </div>
-        </div>
-      </div><!-- End Pricing Item -->
-
-      <div class="col-xl-3 col-lg-6" data-aos="fade-up" data-aos-delay="400">
-        <div class="pricing-item">
-          <h3>Paket Gold</h3>
-          <div class="price">Rp <?= number_format($packagePrices['gold'] ?? 0, 0, ',', '.'); ?> / jam</div>
-          <ul>
-            <li>3 Jam Sewa</li>
-            <li>Bola Futsal Gratis</li>
-            <li>Kapasitas 15 Orang</li>
-            <li>Minuman Gratis</li>
-            <li>Diskon Hari Kerja</li>
-          </ul>
-          <div class="btn-wrap">
-            <a href="lapangan.php" class="btn-buy">Pesan Sekarang</a>
-          </div>
-        </div>
-      </div><!-- End Pricing Item -->
-
-      <div class="col-xl-3 col-lg-6" data-aos="fade-up" data-aos-delay="400">
-        <div class="pricing-item">
-          <span class="advanced">Populer</span>
-          <h3>Paket Diamond</h3>
-          <div class="price">Rp <?= number_format($packagePrices['diamond'] ?? 0, 0, ',', '.'); ?> / jam</div>
-          <ul>
-            <li>4 Jam Sewa</li>
-            <li>Bola Futsal Gratis</li>
-            <li>Kapasitas 20 Orang</li>
-            <li>Minuman Gratis</li>
-            <li>Diskon Hari Kerja</li>
-          </ul>
-          <div class="btn-wrap">
-            <a href="lapangan.php" class="btn-buy">Pesan Sekarang</a>
-          </div>
-        </div>
-      </div><!-- End Pricing Item -->
-
+        </div><!-- End Pricing Item -->
+        <?php $delay += 100; ?>
+      <?php endforeach; ?>
     </div>
   </div>
 </section><!-- /Pricing Section -->
