@@ -34,6 +34,25 @@ composer install
 
 Konfigurasi default ada di `config.php`. Untuk konfigurasi lokal, edit `config.local.php`.
 
+**Langkah singkat (Sandbox)**
+1. Buat akun di Midtrans dan masuk ke Dashboard.
+2. Salin `Server Key` dan `Client Key` dari menu Settings > Access Keys (mode Sandbox).
+3. Tempelkan ke `config.local.php`:
+
+```php
+return [
+  'midtrans' => [
+    'server_key' => 'MID-SERVER-KEY-KAMU',
+    'client_key' => 'MID-CLIENT-KEY-KAMU',
+    'is_sandbox' => true,
+    'snap_url' => 'https://app.sandbox.midtrans.com/snap/v1/transactions',
+    'api_base' => 'https://api.sandbox.midtrans.com/v2',
+  ],
+];
+```
+
+Untuk produksi, ganti `is_sandbox` ke `false` dan gunakan key Production.
+
 **Opsi konfigurasi**
 - `server_key`
 - `client_key`
