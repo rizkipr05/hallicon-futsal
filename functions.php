@@ -419,7 +419,7 @@ function pesan($data)
         $hargaPerJam = intval($lapanganHarga[0]['212279_harga']);
     }
     $fallbackRate = $hargaPerJam > 0 ? $hargaPerJam : 1;
-    $useDynamicPricing = hasPricingRules();
+    $useDynamicPricing = hasPricingRules() && $hargaPerJam <= 0;
 
     if ($lama <= 0) {
         return false;

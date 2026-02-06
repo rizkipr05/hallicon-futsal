@@ -258,7 +258,10 @@ if (isset($_POST["pesan"])) {
         <div class="row gy-4">
 
           <?php foreach ($lapangan as $row) : ?>
-            <?php $displayRate = getRateByDatetime($now, (int) $row["212279_harga"]); ?>
+            <?php
+              $baseRate = (int) $row["212279_harga"];
+              $displayRate = $baseRate > 0 ? $baseRate : getRateByDatetime($now, 1);
+            ?>
 
             <div class="col-6 col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="zoom-in" data-aos-delay="100">
               <div class="course-item">
